@@ -9,3 +9,6 @@ sites/site*/public/theme/
 textpattern/
 HISTORY.txt
 README.txt
+OpenBLAS-0.2.20/
+armadillo-9.200.7/
+.vscode/
