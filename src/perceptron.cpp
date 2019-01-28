@@ -28,6 +28,7 @@ class Perceptron : public SupervisedLearner
     const int INITIAL_WEIGHTS = 0;
     const double LEARNING_RATE = .1;
     const int THRESHOLD = 0;
+    const size_t TRAINING_EPOCH_LIMIT = 1000;
 
     /**
      * This helper function is used to process inputs to the perceptron by performing dot products.
@@ -38,7 +39,7 @@ class Perceptron : public SupervisedLearner
         {
             double total = 0;
 
-            for (size_t i = 0; i < inputs.size(); i++)
+            for (size_t i = 0; i < inputVectorSize; i++)
             {
                 total += inputs[i] * weights[i];
             }
@@ -57,13 +58,13 @@ class Perceptron : public SupervisedLearner
     double processInput(vector<double> &inputs)
     {
         //add bias
-        inputs.push_back(BIAS_WEIGHT);
+        //inputs.push_back(BIAS_WEIGHT);
 
         //perform input processing
         double net = dotProduct(inputs, weights);
 
         //remove bias
-        inputs.pop_back();
+        //inputs.pop_back();
 
         return net;
     }
@@ -71,7 +72,7 @@ class Perceptron : public SupervisedLearner
     void adjustWeights(double target, double output)
     {
         //adjust weights by subtractig the target from the output, multiply by the learning rate and the existing weight value.
-        for (size_t i = 0; i < inputVectorSize; i++)
+        for (size_t i = 0; i <= inputVectorSize; i++)
         {
             weights.at(i) += ((target - output) * LEARNING_RATE * weights.at(i));
         }
@@ -97,21 +98,40 @@ class Perceptron : public SupervisedLearner
         vector<double> featureRow, targetRow;
         double target;
         int output;
+        bool weightsChanged;
 
-        //pull each row from matrix, this will be the input vector to go into the dot product function.
-        for (size_t i = 0; i < features.rows(); i++)
+        for (size_t epoch = 0; epoch < TRAINING_EPOCH_LIMIT; epoch++)
         {
-            //set up input and target data
-            featureRow = features.row(i);
-            targetRow = labels.row(i);
-            target = targetRow.at(0);
+            weightsChanged = false;
 
-            output = processOutput(featureRow);
-
-            //test for correctness
-            if (output != target)
+            //pull each row from matrix, this will be the input vector to go into the dot product function.
+            for (size_t i = 0; i < features.rows(); i++)
             {
-                adjustWeights(target, output);
+                //set up input and target data
+                featureRow = features.row(i);
+                
+                if(epoch == 0)
+                {
+                    //add bias weight on first epoch
+                    featureRow.push_back(BIAS_WEIGHT);
+                }
+
+                targetRow = labels.row(i);
+                target = targetRow.at(0);
+
+                output = processOutput(featureRow);
+
+                //test for correctness
+                if (output != target)
+                {
+                    weightsChanged = true;
+                    adjustWeights(target, output);
+                }
+            }
+
+            if(!weightsChanged)
+            {
+                break;
             }
         }
     }
@@ -123,6 +143,6 @@ class Perceptron : public SupervisedLearner
     {
         vector<double> featuresCopy(features);
 
-        labels.at(0) = processOutput(featuresCopy);
+        labels.push_back(processOutput(featuresCopy));
     }
 };

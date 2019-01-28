@@ -8,6 +8,7 @@
 #include "error.h"
 #include "rand.h"
 #include "filter.h"
+#include "perceptron.h"
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -128,6 +129,8 @@ SupervisedLearner* getLearner(string model, Rand& r)
 {
 	if (model.compare("baseline") == 0)
 		return new BaselineLearner(r);
+	else if (model.compare("perceptron") ==0)
+		return new Perceptron(r);
 	else if (model.compare("neuralnet") == 0)
 		ThrowError("Sorry, ", model, " is not yet implemented");
 	else if (model.compare("decisiontree") == 0)

@@ -26,6 +26,7 @@ class Perceptron : public SupervisedLearner
     const int INITIAL_WEIGHTS = 0;
     const double LEARNING_RATE = .1;
     const int THRESHOLD = 0;
+    const size_t TRAINING_EPOCH_LIMIT = 10000;
 
     /**
      * This helper function is used to process inputs to the perceptron by performing dot products.
