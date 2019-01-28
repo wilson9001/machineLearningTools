@@ -127,9 +127,11 @@ double getTime()
 
 SupervisedLearner* getLearner(string model, Rand& r)
 {
+	cout << "Model is: " << model;
+
 	if (model.compare("baseline") == 0)
 		return new BaselineLearner(r);
-	else if (model.compare("perceptron") ==0)
+	else if (model.compare("perceptron") == 0)
 		return new Perceptron(r);
 	else if (model.compare("neuralnet") == 0)
 		ThrowError("Sorry, ", model, " is not yet implemented");

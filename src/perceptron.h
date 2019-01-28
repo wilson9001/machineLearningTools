@@ -25,18 +25,19 @@ class Perceptron : public SupervisedLearner
     const int THRESHOLD = 0;
     const int INITIAL_WEIGHTS = 0;
     const double LEARNING_RATE = .1;
-    const int THRESHOLD = 0;
     const size_t TRAINING_EPOCH_LIMIT = 10000;
 
     /**
      * This helper function is used to process inputs to the perceptron by performing dot products.
     */
-    double dotProduct(const vector<double> &inputs,const vector<double> &weights);
+    double dotProduct(const vector<double> &inputs);
 
     /**
      * This helper function is used to avoid code duplication in processing perceptron input.
     */
-    int processInput(vector<double> &inputs);
+    double processInput(vector<double> &inputs);
+
+    void adjustWeights(double target, double output);
 
   public:
     Perceptron(Rand &r) : SupervisedLearner(), m_rand(r)

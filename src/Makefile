@@ -33,6 +33,7 @@ CPP_FILES =\
 	learner.cpp\
 	matrix.cpp\
 	rand.cpp\
+	perceptron.cpp\
 
 ################
 # Lists
