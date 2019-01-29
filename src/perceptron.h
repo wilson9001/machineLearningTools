@@ -17,7 +17,7 @@ class Perceptron : public SupervisedLearner
 
   protected:
     Rand &m_rand;
-    vector<double> m_labelVec;
+    //vector<double> m_labelVec;
     double dotProduct(vector<double> features, vector<double> weights);
     vector<double> weights;
     size_t inputVectorSize;
@@ -34,7 +34,7 @@ class Perceptron : public SupervisedLearner
     double dotProduct(const vector<double> &inputs);
 
     /**
-     * This helper function is used to avoid code duplication in processing perceptron input.
+     * This function is intended to perform any low-level pre- or post-processing on each set of inputs.
     */
     double processInput(const vector<double> &inputs);
 

@@ -1,7 +1,10 @@
 #include "perceptron.h"
 #include "error.h"
 #include <string>
+
+#ifdef _DEBUG
 #include <iostream>
+#endif
 
 using namespace std;
 
@@ -27,36 +30,25 @@ double Perceptron::dotProduct(const vector<double> &inputs)
 
         for (size_t i = 0; i <= inputVectorSize; i++)
         {
-            //cout << "in: " << inputs[i] << ", weight: " << weights[i] << endl;
             total += (inputs[i] * weights[i]);
         }
-
-        //cout << total << endl;
 
         return total;
     }
     else
     {
         ThrowError("features vector size != weight vector size! ", to_string(inputs.size()), ", ", to_string(weights.size()));
-        return 0;
+        return 0; //This is never reached but g++ issues a warning without it.
     }
 }
 
 /**
- * This helper function is used to avoid code duplication in processing input.
+ * This function is intended to perform any low-level pre- or post-processing on each set of inputs.
 */
 double Perceptron::processInput(const vector<double> &inputs)
-{
-    //add bias
-    //inputs.push_back(BIAS_WEIGHT);
-
+{   
     //perform input processing
     double net = dotProduct(inputs);
-
-    //cout << net << endl;
-
-    //remove bias
-    //inputs.pop_back();
 
     return net;
 }
@@ -115,8 +107,6 @@ void Perceptron::train(Matrix &features, Matrix &labels)
 
     for (; epochsSinceLastChange <= EPOCHS_SINCE_LAST_CHANGE_LIMIT && epoch < TRAINING_EPOCH_LIMIT; epoch++)
     {
-        //cout << "\nEpoch " << epoch << endl;
-
         weightsChanged = false;
 
         features.shuffleRows(m_rand, &labels);
@@ -127,19 +117,14 @@ void Perceptron::train(Matrix &features, Matrix &labels)
             //set up input and target data
             featureRow = &features.row(i);
 
-            //cout << "\nRow size at start of epoch is " << (*featureRow).size();
-
             if (epoch == 0)
             {
-                //cout << "\nAdding bias weight to row";
                 //add bias weight on first epoch
                 (*featureRow).push_back(BIAS_WEIGHT);
             }
 
-            //cout << "\nRow size before dot product is: " << (*featureRow).size() << endl;
             targetRow = labels.row(i);
             target = targetRow.at(0);
-            //cout << "target is: " << target << endl;
 
             output = processOutput(*featureRow);
 
@@ -180,8 +165,6 @@ void Perceptron::train(Matrix &features, Matrix &labels)
 */
 void Perceptron::predict(const vector<double> &features, vector<double> &labels)
 {
-    //cout << "Begin prediction\nInput is " << features.size() << " entries long\nLabels vector is " << labels.size() << " entries long\n";
-
     int output;
     
     if (features.size() == inputVectorSize)
@@ -192,10 +175,14 @@ void Perceptron::predict(const vector<double> &features, vector<double> &labels)
 
         output = processOutput(featuresCopy);
     }
-    else
+    else //row was recylced from training and already contains the bias weight
     {
         output = processOutput(features);
     }
+
+    #ifdef _DEBUG
+    cout << output;
+    #endif
 
     labels.at(0) = output;
 }
