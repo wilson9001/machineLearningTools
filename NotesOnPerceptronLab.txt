@@ -1,0 +1,256 @@
+-----------------------------------------------------------------------------------------------------
+Notes on training from created datasets
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-separable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.1
+
+Trained in 13 epochs
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-setosa: 4/4
+Iris-versicolor: 4/4
+Set accuracy: 1
+
+Training time: 9.41753e-05 seconds
+
+Testing time: 5.96046e-06 seconds
+
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-inseparable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.1
+
+Trained in 100000 epochs (max)
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-versicolor: 3/4
+Iris-virginica: 3/4
+Set accuracy: 0.75
+
+Training time: 0.0541689 seconds
+
+Testing time: 3.09944e-06 seconds
+
+
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-separable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.3
+
+Trained in 13 epochs
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-setosa: 4/4
+Iris-versicolor: 4/4
+Set accuracy: 1
+
+Training time: 0.000128031 seconds
+
+Testing time: 5.96046e-06 seconds
+
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-inseparable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.3
+
+Trained in 100000 epochs (max)
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-versicolor: 3/4
+Iris-virginica: 3/4
+Set accuracy: 0.75
+
+Training time: 0.0568871 seconds
+
+Testing time: 2.86102e-06 seconds
+
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-separable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.5
+
+Trained in 13 epochs
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-setosa: 4/4
+Iris-versicolor: 4/4
+Set accuracy: 1
+
+Training time: 3.71933e-05 seconds
+
+Testing time: 2.86102e-06 seconds
+
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-inseparable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.5
+
+Trained in 100000 epochs (max)
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-versicolor: 3/4
+Iris-virginica: 3/4
+Set accuracy: 0.75
+
+Training time: 0.0694249 seconds
+
+Testing time: 4.05312e-06 seconds
+
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-inseparable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.7
+
+Trained in 100000 epochs (max)
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-versicolor: 3/4
+Iris-virginica: 3/4
+Set accuracy: 0.75
+
+Training time: 0.0389462 seconds
+
+Testing time: 1.90735e-06 seconds
+
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-separable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.9
+
+Trained in 13 epochs
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-setosa: 4/4
+Iris-versicolor: 4/4
+Set accuracy: 1
+
+Training time: 8.89301e-05 seconds
+
+Testing time: 6.91414e-06 seconds
+
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-inseparable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.9
+
+Trained in 100000 epochs (max)
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-versicolor: 3/4
+Iris-virginica: 3/4
+Set accuracy: 0.75
+
+Training time: 0.0393519 seconds
+
+Testing time: 3.09944e-06 seconds
+
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-separable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.1
+
+Trained in 13 epochs
+
+Final weights are:
+-0.00277778
+0.0923077
+0
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-setosa: 4/4
+Iris-versicolor: 4/4
+Set accuracy: 1
+
+Training time: 0.000121117 seconds
+
+Testing time: 5.00679e-06 seconds
+
+-----------------------------------------------------------------------------------------------------
+
+Dataset name: ../datasets/iris-linearly-inseparable.arff
+Number of instances (rows): 8
+Number of attributes (cols): 3
+Learning algorithm: perceptron
+Evaluation method: training
+
+Learning rate: 0.1
+
+Trained in 100000 epochs (max)
+
+Final weights are:
+-0.155
+0.283333
+0
+
+
+Accuracy on the training set: (does NOT imply the ability to generalize)
+Iris-versicolor: 3/4
+Iris-virginica: 3/4
+Set accuracy: 0.75
+
+Training time: 0.0369298 seconds
+
+Testing time: 4.05312e-06 seconds
+

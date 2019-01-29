@@ -1,10 +1,7 @@
 #include "perceptron.h"
 #include "error.h"
 #include <string>
-
-#ifdef _DEBUG
 #include <iostream>
-#endif
 
 using namespace std;
 
@@ -105,6 +102,8 @@ void Perceptron::train(Matrix &features, Matrix &labels)
 
     size_t epoch = 0;
 
+    cout << "\nLearning rate: " << LEARNING_RATE << endl;
+
     for (; epochsSinceLastChange <= EPOCHS_SINCE_LAST_CHANGE_LIMIT && epoch < TRAINING_EPOCH_LIMIT; epoch++)
     {
         weightsChanged = false;
@@ -144,16 +143,15 @@ void Perceptron::train(Matrix &features, Matrix &labels)
         weightsChanged ? epochsSinceLastChange = 0 : epochsSinceLastChange++;
     }
 
+    cout << "\nTrained in " << epoch << " epochs" << (epoch == TRAINING_EPOCH_LIMIT ? " (max)\n" : "\n");
+    cout << "\nFinal weights are:\n";
+
+    for (double weight : weights)
+    {
+        cout << weight << endl;
+    }
+
 #ifdef _DEBUG
-    if (epoch == TRAINING_EPOCH_LIMIT)
-    {
-        cout << "\nMaximum training epochs reached\n";
-    }
-    else
-    {
-        cout << "\nTrained in " << epoch << " epochs\n";
-    }
-    
     cout << "\nOutput " << output1Count << " 1's and " << output0Count << " 0's\n";
     cout << "Target contained " << target1Count << " 1's and " << target0Count << " 0's\n";
     cout << "Begin predictions:\n\n";
