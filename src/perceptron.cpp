@@ -1,13 +1,14 @@
 #include "perceptron.h"
 #include "error.h"
 #include <string>
+#include <iostream>
 
 using namespace std;
 
 /**
  * This helper function takes the net output from processing inputs and then converts it to a 0 or 1, since this is a perceptron.
 */
-int Perceptron::processOutput(vector<double> &inputs)
+int Perceptron::processOutput(const vector<double> &inputs)
 {
     double net = processInput(inputs);
 
@@ -24,16 +25,19 @@ double Perceptron::dotProduct(const vector<double> &inputs)
     {
         double total = 0;
 
-        for (size_t i = 0; i < inputVectorSize; i++)
+        for (size_t i = 0; i <= inputVectorSize; i++)
         {
-            total += inputs[i] * weights[i];
+            //cout << "in: " << inputs[i] << ", weight: " << weights[i] << endl;
+            total += (inputs[i] * weights[i]);
         }
+
+        //cout << total << endl;
 
         return total;
     }
     else
     {
-        ThrowError("features vector size != weight vector size! ", to_string(inputs.size()),", ", to_string(weights.size()));
+        ThrowError("features vector size != weight vector size! ", to_string(inputs.size()), ", ", to_string(weights.size()));
         return 0;
     }
 }
@@ -41,13 +45,15 @@ double Perceptron::dotProduct(const vector<double> &inputs)
 /**
  * This helper function is used to avoid code duplication in processing input.
 */
-double Perceptron::processInput(vector<double> &inputs)
+double Perceptron::processInput(const vector<double> &inputs)
 {
     //add bias
     //inputs.push_back(BIAS_WEIGHT);
 
     //perform input processing
     double net = dotProduct(inputs);
+
+    //cout << net << endl;
 
     //remove bias
     //inputs.pop_back();
@@ -58,11 +64,11 @@ double Perceptron::processInput(vector<double> &inputs)
 /**
  * Adjust weights by subtractig the target from the output, multiply by the learning rate and the existing weight value.
 */
-void Perceptron::adjustWeights(double target, double output)
+void Perceptron::adjustWeights(double target, vector<double> &inputs, double output)
 {
     for (size_t i = 0; i <= inputVectorSize; i++)
     {
-        weights.at(i) += ((target - output) * LEARNING_RATE * weights.at(i));
+        weights.at(i) += ((target - output) * LEARNING_RATE * inputs.at(i));
     }
 }
 
@@ -74,6 +80,10 @@ void Perceptron::train(Matrix &features, Matrix &labels)
     //first epoch weights must be initialized.
     if (weights.size() == 0)
     {
+#ifdef _DEBUG
+        cout << "\nCreating weights\n";
+#endif
+
         inputVectorSize = features.row(0).size();
 
         for (size_t i = 0; i <= inputVectorSize; i++)
@@ -82,13 +92,31 @@ void Perceptron::train(Matrix &features, Matrix &labels)
         }
     }
 
-    vector<double> featureRow, targetRow;
+#ifdef _DEBUG
+    cout << "\nThe weight vector is size " << weights.size() << endl;
+#endif
+
+    vector<double> *featureRow;
+    vector<double> targetRow;
     double target;
     int output;
+    size_t epochsSinceLastChange = 0;
     bool weightsChanged;
 
-    for (size_t epoch = 0; epoch < TRAINING_EPOCH_LIMIT; epoch++)
+#ifdef _DEBUG
+    cout << "\nThere are " << features.rows() << " rows and " << features.row(0).size() << " columns (exempting bias weight) in the features matrix.\n";
+    size_t output0Count = 0;
+    size_t output1Count = 0;
+    size_t target0Count = 0;
+    size_t target1Count = 0;
+#endif
+
+    size_t epoch = 0;
+
+    for (; epochsSinceLastChange <= EPOCHS_SINCE_LAST_CHANGE_LIMIT && epoch < TRAINING_EPOCH_LIMIT; epoch++)
     {
+        //cout << "\nEpoch " << epoch << endl;
+
         weightsChanged = false;
 
         features.shuffleRows(m_rand, &labels);
@@ -97,32 +125,54 @@ void Perceptron::train(Matrix &features, Matrix &labels)
         for (size_t i = 0; i < features.rows(); i++)
         {
             //set up input and target data
-            featureRow = features.row(i);
+            featureRow = &features.row(i);
+
+            //cout << "\nRow size at start of epoch is " << (*featureRow).size();
 
             if (epoch == 0)
             {
+                //cout << "\nAdding bias weight to row";
                 //add bias weight on first epoch
-                featureRow.push_back(BIAS_WEIGHT);
+                (*featureRow).push_back(BIAS_WEIGHT);
             }
 
+            //cout << "\nRow size before dot product is: " << (*featureRow).size() << endl;
             targetRow = labels.row(i);
             target = targetRow.at(0);
+            //cout << "target is: " << target << endl;
 
-            output = processOutput(featureRow);
+            output = processOutput(*featureRow);
+
+#ifdef _DEBUG
+            output ? ++output1Count : ++output0Count;
+            target ? ++target1Count : ++target0Count;
+#endif
 
             //test for correctness
             if (output != target)
             {
                 weightsChanged = true;
-                adjustWeights(target, output);
+                adjustWeights(target, *featureRow, output);
             }
         }
 
-        if (!weightsChanged)
-        {
-            break;
-        }
+        weightsChanged ? epochsSinceLastChange = 0 : epochsSinceLastChange++;
     }
+
+#ifdef _DEBUG
+    if (epoch == TRAINING_EPOCH_LIMIT)
+    {
+        cout << "\nMaximum training epochs reached\n";
+    }
+    else
+    {
+        cout << "\nTrained in " << epoch << " epochs\n";
+    }
+    
+    cout << "\nOutput " << output1Count << " 1's and " << output0Count << " 0's\n";
+    cout << "Target contained " << target1Count << " 1's and " << target0Count << " 0's\n";
+    cout << "Begin predictions:\n\n";
+#endif
 }
 
 /**
@@ -130,7 +180,22 @@ void Perceptron::train(Matrix &features, Matrix &labels)
 */
 void Perceptron::predict(const vector<double> &features, vector<double> &labels)
 {
-    vector<double> featuresCopy(features);
+    //cout << "Begin prediction\nInput is " << features.size() << " entries long\nLabels vector is " << labels.size() << " entries long\n";
 
-    labels.push_back(processOutput(featuresCopy));
+    int output;
+    
+    if (features.size() == inputVectorSize)
+    {
+        //add bias weight since row doesn't have it
+        vector<double> featuresCopy(features);
+        featuresCopy.push_back(BIAS_WEIGHT);
+
+        output = processOutput(featuresCopy);
+    }
+    else
+    {
+        output = processOutput(features);
+    }
+
+    labels.at(0) = output;
 }

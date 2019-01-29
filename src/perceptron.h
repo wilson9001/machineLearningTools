@@ -13,7 +13,7 @@ class Perceptron : public SupervisedLearner
     /**
      * This helper function takes the net output from processing inputs and then converts it to a 0 or 1, since this is a perceptron.
     */
-    int processOutput(vector<double> &inputs);
+    int processOutput(const vector<double> &inputs);
 
   protected:
     Rand &m_rand;
@@ -25,7 +25,8 @@ class Perceptron : public SupervisedLearner
     const int THRESHOLD = 0;
     const int INITIAL_WEIGHTS = 0;
     const double LEARNING_RATE = .1;
-    const size_t TRAINING_EPOCH_LIMIT = 10000;
+    const size_t TRAINING_EPOCH_LIMIT = 100000;
+    const size_t EPOCHS_SINCE_LAST_CHANGE_LIMIT = 3;
 
     /**
      * This helper function is used to process inputs to the perceptron by performing dot products.
@@ -35,14 +36,15 @@ class Perceptron : public SupervisedLearner
     /**
      * This helper function is used to avoid code duplication in processing perceptron input.
     */
-    double processInput(vector<double> &inputs);
+    double processInput(const vector<double> &inputs);
 
-    void adjustWeights(double target, double output);
+    void adjustWeights(double target, vector<double> &inputs, double output);
 
   public:
     Perceptron(Rand &r) : SupervisedLearner(), m_rand(r)
     {
         inputVectorSize = 0;
+        weights = vector<double>();
     }
 
     virtual ~Perceptron()
