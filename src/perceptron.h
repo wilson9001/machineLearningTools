@@ -21,9 +21,9 @@ class Perceptron : public SupervisedLearner
     double dotProduct(vector<double> features, vector<double> weights);
     vector<double> weights;
     size_t inputVectorSize;
-    const double BIAS_WEIGHT = 0;
+    const double BIAS_WEIGHT = 1;
     const int THRESHOLD = 0;
-    const int INITIAL_WEIGHTS = 1;
+    const double INITIAL_WEIGHTS = 0;
     const double LEARNING_RATE = .1;
     const size_t TRAINING_EPOCH_LIMIT = 100000;
     const size_t EPOCHS_SINCE_LAST_CHANGE_LIMIT = 3;

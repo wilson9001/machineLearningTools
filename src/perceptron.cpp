@@ -2,6 +2,7 @@
 #include "error.h"
 #include <string>
 #include <iostream>
+//#include <fstream>
 
 using namespace std;
 
@@ -43,8 +44,9 @@ double Perceptron::dotProduct(const vector<double> &inputs)
  * This function is intended to perform any low-level pre- or post-processing on each set of inputs.
 */
 double Perceptron::processInput(const vector<double> &inputs)
-{   
+{
     //perform input processing
+    
     double net = dotProduct(inputs);
 
     return net;
@@ -88,7 +90,8 @@ void Perceptron::train(Matrix &features, Matrix &labels)
     vector<double> *featureRow;
     vector<double> targetRow;
     double target;
-    int output;
+    //int output;
+    double output;
     size_t epochsSinceLastChange = 0;
     bool weightsChanged;
 
@@ -125,33 +128,44 @@ void Perceptron::train(Matrix &features, Matrix &labels)
             targetRow = labels.row(i);
             target = targetRow.at(0);
 
+            //uncomment for perceptron rule training
             output = processOutput(*featureRow);
+
+            //uncomment for delta rule training
+            //output = processInput(*featureRow);
 
 #ifdef _DEBUG
             output ? ++output1Count : ++output0Count;
             target ? ++target1Count : ++target0Count;
 #endif
 
+            //uncomment for perceptron training
             //test for correctness
             if (output != target)
             {
                 weightsChanged = true;
                 adjustWeights(target, *featureRow, output);
             }
+
+            //uncomment for delta training
+            //adjustWeights(target, *featureRow, output);
+            //weightsChanged = true;
         }
 
         weightsChanged ? epochsSinceLastChange = 0 : epochsSinceLastChange++;
     }
 
+#ifdef _DEBUG
     cout << "\nTrained in " << epoch << " epochs" << (epoch == TRAINING_EPOCH_LIMIT ? " (max)\n" : "\n");
     cout << "\nFinal weights are:\n";
 
     for (double weight : weights)
     {
-        cout << weight << endl;
+        cout << weight << ",";
     }
 
-#ifdef _DEBUG
+    cout << " (last weight is bias weight)\n";
+
     cout << "\nOutput " << output1Count << " 1's and " << output0Count << " 0's\n";
     cout << "Target contained " << target1Count << " 1's and " << target0Count << " 0's\n";
     cout << "Begin predictions:\n\n";
@@ -164,7 +178,7 @@ void Perceptron::train(Matrix &features, Matrix &labels)
 void Perceptron::predict(const vector<double> &features, vector<double> &labels)
 {
     int output;
-    
+
     if (features.size() == inputVectorSize)
     {
         //add bias weight since row doesn't have it
@@ -178,9 +192,9 @@ void Perceptron::predict(const vector<double> &features, vector<double> &labels)
         output = processOutput(features);
     }
 
-    #ifdef _DEBUG
+#ifdef _DEBUG
     cout << output;
-    #endif
+#endif
 
     labels.at(0) = output;
 }
