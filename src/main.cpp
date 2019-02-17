@@ -9,6 +9,7 @@
 #include "rand.h"
 #include "filter.h"
 #include "perceptron.h"
+#include "NeuralNet.h"
 #include <iostream>
 #include <fstream>
 #include <map>
