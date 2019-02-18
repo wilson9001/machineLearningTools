@@ -9,7 +9,7 @@ class Node
     public:
     Node();
     Node(double initialOutput);
-    ~Node();
+    virtual ~Node();
     double getOutput();
     void setOutput(double newOutput);
 };

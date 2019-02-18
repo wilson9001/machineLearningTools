@@ -4,14 +4,18 @@
 #include "Node.h"
 #include <vector>
 #include <random>
+#include <memory>
 
-using std::vector;
+using namespace std;
 
 class NonInputNode: Node
 {
-    private:
-    vector<double>* weights;
-    vector<Node*> inputs;
+    protected:
+    //unique_ptr<vector<double>> weights;
+    //unique_ptr<vector<shared_ptr<Node>>> inputs;
+    vector<double> weights;
+    vector<shared_ptr<Node>> inputs;
+    
     double error;
     double learningRate;
     const double DEFAULTLEARNINGRATE = .1;
@@ -19,18 +23,23 @@ class NonInputNode: Node
     const double WEIGHTINITLOWERBOUND = -.5;
     const double WEIGHTINITUPPERBOUND = .5;
 
-    protected:
-    virtual void adjustWeights(double target);
+    void adjustWeights();
     void createWeights();
-
+    virtual void calculateError(double target);
+    
     public:
-    NonInputNode(vector<Node*> inputs);
-    NonInputNode(vector<Node*> inputs, double learningRate);
-    NonInputNode(vector<Node*> inputs, double learningRate, double error);
-    ~NonInputNode();
+    // NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs);
+    // NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs, double learningRate);
+    // NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs, double learningRate, double error);
+
+    NonInputNode(vector<shared_ptr<Node>> inputs);
+    NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate);
+    NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double error);
+    
+    virtual ~NonInputNode();
 
     vector<double> getWeights();
-    vector<Node*> getInputs();
+    vector<shared_ptr<Node>> getInputs();
     size_t getInputSize();
 };
 
