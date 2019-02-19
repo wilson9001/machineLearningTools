@@ -2,9 +2,8 @@
 #define MIDDLENODE_H
 
 #include "NonInputNode.h"
-#include "error.h"
 
-class MiddleNode : NonInputNode
+class MiddleNode : public NonInputNode
 {
     protected:
     //unique_ptr<vector<shared_ptr<NonInputNode>>> outputs;
@@ -29,6 +28,7 @@ class MiddleNode : NonInputNode
 
     //void setOutputs(vector<shared_ptr<NonInputNode>>* outputs);
     void setOutputs(vector<shared_ptr<NonInputNode>> outputs);
+    void addOutput(shared_ptr<NonInputNode> output);
 };
 
 #endif

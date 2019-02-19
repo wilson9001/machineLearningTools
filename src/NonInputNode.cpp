@@ -8,14 +8,26 @@ void NonInputNode::createWeights()
 
     //weights = make_unique<vector<double>>(); //unique_ptr(new vector<double>());
     weights = vector<double>();
+    input_weightIndex_map = unordered_map<string, size_t>();
     //(*weights).reserve((*inputs).size());
     weights.reserve(inputs.size());
 
     //for (size_t i = 0; i < (*inputs).size(); i++)
-    for (size_t i = 0; i < inputs.size(); i++)
+    /*for (size_t i = 0; i < inputs.size(); i++)
     {
         //(*weights).push_back(distributeInRange(runGenerator));
         weights.push_back(distributeInRange(runGenerator));
+    }*/
+
+    //for(const shared_ptr<Node>& inputPtr : inputs)
+    for (size_t i = 0; i < inputs.size(); i++)
+    {
+        double newWeight = distributeInRange(runGenerator);
+        weights.push_back(newWeight);
+        oldWeights.push_back(newWeight);
+
+        //input_weightIndex_map.emplace((*(inputs.at(i))).getUUID(), i);
+        input_weightIndex_map.emplace(inputs.at(i)->getUUID(), i);
     }
 }
 
@@ -23,7 +35,7 @@ void NonInputNode::createWeights()
 NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs): Node()
 {
     //this->inputs = move(inputs)
-    this->inputs = inputs
+    this->inputs = inputs;
     learningRate = DEFAULTLEARNINGRATE;
     error = DEFAULTERROR;
     
@@ -47,9 +59,13 @@ NonInputNode::~NonInputNode()
 
 void NonInputNode::adjustWeights()
 {
-    for(size_t i = 0; i < (*weights).size(); i++)
+    //for(size_t i = 0; i < (*weights).size(); i++)
+    for(size_t i = 0; i < weights.size(); i++)
     {
-        (*weights).at(i) += ((*weights).at(i)*error*(*((*inputs).at(i))).getOutput());
+        //(*weights).at(i) += ((*weights).at(i)*error*(*((*inputs).at(i))).getOutput());
+        //weights.at(i) += (weights.at(i)*error*((*(inputs.at(i))).getOutput()));
+        oldWeights.at(i) = weights.at(i);
+        weights.at(i) += (weights.at(i)*error*(inputs.at(i)->getOutput()));
     }
 }
 
@@ -63,4 +79,17 @@ size_t NonInputNode::getInputSize()
 void NonInputNode::calculateError(double target)
 {
     error = (target - output)*output*(1-output);
+}
+
+double NonInputNode::getError()
+{
+    return error;
+}
+
+double NonInputNode::getOldWeightForInput(string inputNodeUUID)
+{
+    //find weight from map and return weight.
+    size_t weightIndex = input_weightIndex_map.at(inputNodeUUID);
+
+    return oldWeights.at(weightIndex);
 }

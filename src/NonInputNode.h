@@ -5,17 +5,21 @@
 #include <vector>
 #include <random>
 #include <memory>
+#include <unordered_map>
 
-using namespace std;
+//sudo apt install uuid-dev installs this. Other option is attempt to read from /proc/sys/kernel/random/uuid, but this is simpler.
+//#include <uuid/uuid.h>
 
-class NonInputNode: Node
+class NonInputNode: public Node
 {
     protected:
     //unique_ptr<vector<double>> weights;
     //unique_ptr<vector<shared_ptr<Node>>> inputs;
     vector<double> weights;
+    vector<double> oldWeights;
     vector<shared_ptr<Node>> inputs;
-    
+    unordered_map<string, size_t> input_weightIndex_map;
+
     double error;
     double learningRate;
     const double DEFAULTLEARNINGRATE = .1;
@@ -39,8 +43,10 @@ class NonInputNode: Node
     virtual ~NonInputNode();
 
     vector<double> getWeights();
+    double getError();
     vector<shared_ptr<Node>> getInputs();
     size_t getInputSize();
+    double getOldWeightForInput(string inputNodeUUID);
 };
 
 #endif
