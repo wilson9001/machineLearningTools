@@ -9,7 +9,7 @@ class MiddleNode : public NonInputNode
     //unique_ptr<vector<shared_ptr<NonInputNode>>> outputs;
     vector<shared_ptr<NonInputNode>> outputs;
 
-    virtual void calculateError();
+    virtual void calculateError(double target);
 
     public:
     //MiddleNode(vector<shared_ptr<Node>>* inputs);
@@ -24,7 +24,7 @@ class MiddleNode : public NonInputNode
     
     virtual ~MiddleNode();
 
-    vector<shared_ptr<NonInputNode>> getOutputs();
+    vector<shared_ptr<NonInputNode>>& getOutputs();
 
     //void setOutputs(vector<shared_ptr<NonInputNode>>* outputs);
     void setOutputs(vector<shared_ptr<NonInputNode>> outputs);

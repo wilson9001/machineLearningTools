@@ -38,7 +38,8 @@ NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs): Node()
     this->inputs = inputs;
     learningRate = DEFAULTLEARNINGRATE;
     error = DEFAULTERROR;
-    
+    momentum = 0;
+
     createWeights();
 }
 
@@ -65,7 +66,10 @@ void NonInputNode::adjustWeights()
         //(*weights).at(i) += ((*weights).at(i)*error*(*((*inputs).at(i))).getOutput());
         //weights.at(i) += (weights.at(i)*error*((*(inputs.at(i))).getOutput()));
         oldWeights.at(i) = weights.at(i);
-        weights.at(i) += (weights.at(i)*error*(inputs.at(i)->getOutput()));
+
+        /////////////////TODO: Implement momentum modification here.
+
+        weights.at(i) += (learningRate*error*(inputs.at(i)->getOutput()));
     }
 }
 
@@ -92,4 +96,23 @@ double NonInputNode::getOldWeightForInput(string inputNodeUUID)
     size_t weightIndex = input_weightIndex_map.at(inputNodeUUID);
 
     return oldWeights.at(weightIndex);
+}
+
+void NonInputNode::calculateOutput()
+{
+    double net = 0;
+
+    if(inputs.empty())
+    {
+        ThrowError("Attempted to calculate node output with no inputs");
+    }
+
+    for(shared_ptr<Node>& input : inputs)
+    {
+        net += input->getOutput();
+    }
+
+    net *= -1;
+
+    output = 1/(1+exp(net));
 }

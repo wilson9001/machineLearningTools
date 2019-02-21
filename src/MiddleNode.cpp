@@ -33,7 +33,7 @@ MiddleNode::~MiddleNode()
     //outputs = NULL;
 }
 
-vector<shared_ptr<NonInputNode>> MiddleNode::getOutputs()
+vector<shared_ptr<NonInputNode>>& MiddleNode::getOutputs()
 {
     //return *outputs;
     return outputs;
@@ -52,7 +52,7 @@ void MiddleNode::addOutput(shared_ptr<NonInputNode> output)
     outputs.push_back(output);
 }
 
-void MiddleNode::calculateError()
+void MiddleNode::calculateError(double target)
 {
     //TODO: Check for NULL outputs before pulling values and throw error if true.
     //TODO: Calculate error as sum(dot(error of one output node, every weight in current node))?

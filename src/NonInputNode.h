@@ -2,10 +2,9 @@
 #define NONINPUTNODE_H
 
 #include "Node.h"
-#include <vector>
 #include <random>
-#include <memory>
 #include <unordered_map>
+#include <math.h>
 
 //sudo apt install uuid-dev installs this. Other option is attempt to read from /proc/sys/kernel/random/uuid, but this is simpler.
 //#include <uuid/uuid.h>
@@ -19,7 +18,7 @@ class NonInputNode: public Node
     vector<double> oldWeights;
     vector<shared_ptr<Node>> inputs;
     unordered_map<string, size_t> input_weightIndex_map;
-
+    double momentum;
     double error;
     double learningRate;
     const double DEFAULTLEARNINGRATE = .1;
@@ -27,9 +26,7 @@ class NonInputNode: public Node
     const double WEIGHTINITLOWERBOUND = -.5;
     const double WEIGHTINITUPPERBOUND = .5;
 
-    void adjustWeights();
     void createWeights();
-    virtual void calculateError(double target);
     
     public:
     // NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs);
@@ -42,11 +39,15 @@ class NonInputNode: public Node
     
     virtual ~NonInputNode();
 
+    virtual void calculateError(double target);
     vector<double> getWeights();
     double getError();
     vector<shared_ptr<Node>> getInputs();
     size_t getInputSize();
     double getOldWeightForInput(string inputNodeUUID);
+    void useMomentum(double momentum);
+    void adjustWeights();
+    void calculateOutput();
 };
 
 #endif
