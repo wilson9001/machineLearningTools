@@ -41,6 +41,7 @@ class Node
     virtual void calculateOutput(){}
     virtual void setOutputs(vector<shared_ptr<NonInputNode>> outputs){}
     virtual void addOutput(shared_ptr<NonInputNode> output){};
+    virtual double getMomentum(){return 0;}
 };
 
 #endif

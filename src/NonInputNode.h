@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <math.h>
 
-//sudo apt install uuid-dev installs this. Other option is attempt to read from /proc/sys/kernel/random/uuid, but this is simpler.
+//sudo apt install uuid-dev installs this. Other option is attempt to read from /proc/sys/kernel/random/uuid, which is what I'm currently doing.
 //#include <uuid/uuid.h>
 
 class NonInputNode: public Node
@@ -21,8 +21,10 @@ class NonInputNode: public Node
     double momentum;
     double error;
     double learningRate;
+    double momentum;
     const double DEFAULTLEARNINGRATE = .1;
     const double DEFAULTERROR = 0;
+    const double DEFAULTMOMENTUM = 0;
     const double WEIGHTINITLOWERBOUND = -.5;
     const double WEIGHTINITUPPERBOUND = .5;
 
@@ -34,8 +36,8 @@ class NonInputNode: public Node
     // NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs, double learningRate, double error);
 
     NonInputNode(vector<shared_ptr<Node>> inputs);
-    NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate);
-    NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double error);
+    NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum);
+    NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error);
     
     virtual ~NonInputNode();
 
@@ -48,6 +50,7 @@ class NonInputNode: public Node
     void useMomentum(double momentum);
     void adjustWeights();
     void calculateOutput();
+    double getMomentum();
 };
 
 #endif

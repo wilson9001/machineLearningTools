@@ -14,10 +14,11 @@ class Layer
     unique_ptr<Node> bias;
     layerTypes layerType;
     const double DEFAULTBIASVALUE = 1;
+    const double DEFAULTMOMENTUM = 0;
 
     public:
-    Layer(layerTypes layerType, size_t nodeCount, Layer& previousLayer, vector<double> initialOutputs, double learningRate);
-    Layer(layerTypes layerType, size_t nodeCount, Layer& previousLayer, vector<double> initialOutputs, double learningRate, double bias);
+    Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousLayer, vector<double> initialOutputs, double learningRate);
+    Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousLayer, vector<double> initialOutputs, double learningRate, double bias);
     
     /*
     Layer(size_t nodeCount, layerTypes nodeType, Layer& previousLayer, vector<double>& initialOutputs);
@@ -38,6 +39,8 @@ class Layer
     vector<double> getOutputs();
     vector<vector<double>> getWeights();
     layerTypes getLayerType();
+    void setBias(double newBias);
+    size_t getNodeCount();
 };
 
 #endif

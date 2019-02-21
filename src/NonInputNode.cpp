@@ -32,25 +32,26 @@ void NonInputNode::createWeights()
 }
 
 //NonInputNode::NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs): Node()
-NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs): Node()
+NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs): Node(), inputs(inputs), learningRate(DEFAULTLEARNINGRATE), error(DEFAULTERROR), momentum(DEFAULTMOMENTUM)
 {
     //this->inputs = move(inputs)
-    this->inputs = inputs;
-    learningRate = DEFAULTLEARNINGRATE;
-    error = DEFAULTERROR;
-    momentum = 0;
+    //this->inputs = inputs;
+    //learningRate = DEFAULTLEARNINGRATE;
+    //error = DEFAULTERROR;
+    //this->momentum = momentum;
 
     createWeights();
 }
 
 //NonInputNode::NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs, double learningRate): NonInputNode(inputs)
-NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate): NonInputNode(inputs)
+NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum): NonInputNode(inputs)//, learningRate(learningRate), momentum(momentum)
 {
     this->learningRate = learningRate;
+    this->momentum = momentum;
 }
 
 //NonInputNode::NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs, double learningRate, double error): NonInputNode(inputs, learningRate)
-NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double error): NonInputNode(inputs, learningRate)
+NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error): NonInputNode(inputs, learningRate, momentum)//, error(error)
 {
     this->error = error;
 }
@@ -61,15 +62,23 @@ NonInputNode::~NonInputNode()
 void NonInputNode::adjustWeights()
 {
     //for(size_t i = 0; i < (*weights).size(); i++)
+
+    double previousWeightChange = 0;
+    double weightChange;
+    
     for(size_t i = 0; i < weights.size(); i++)
     {
         //(*weights).at(i) += ((*weights).at(i)*error*(*((*inputs).at(i))).getOutput());
         //weights.at(i) += (weights.at(i)*error*((*(inputs.at(i))).getOutput()));
         oldWeights.at(i) = weights.at(i);
 
-        /////////////////TODO: Implement momentum modification here.
+        weightChange = (momentum and i > 0) ? 
+        (learningRate * error * inputs.at(i)->getOutput()) + (momentum * previousWeightChange) 
+        : (learningRate * error * (inputs.at(i)->getOutput()));
 
-        weights.at(i) += (learningRate*error*(inputs.at(i)->getOutput()));
+       previousWeightChange = weightChange;
+
+        weights.at(i) += weightChange;
     }
 }
 
@@ -82,7 +91,7 @@ size_t NonInputNode::getInputSize()
 //virtual
 void NonInputNode::calculateError(double target)
 {
-    error = (target - output)*output*(1-output);
+    error = (target - output) * output * (1 - output);
 }
 
 double NonInputNode::getError()
@@ -115,4 +124,9 @@ void NonInputNode::calculateOutput()
     net *= -1;
 
     output = 1/(1+exp(net));
+}
+
+double NonInputNode::getMomentum()
+{
+    return momentum;
 }

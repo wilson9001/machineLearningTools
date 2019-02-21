@@ -18,9 +18,9 @@ class MiddleNode : public NonInputNode
     //MiddleNode(vector<shared_ptr<Node>>* inputs, double learningRate, double error, vector<shared_ptr<NonInputNode>>* outputs);
     
     MiddleNode(vector<shared_ptr<Node>> inputs);
-    MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate);
-    MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double error);
-    MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double error, vector<shared_ptr<NonInputNode>> outputs);
+    MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum);
+    MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error);
+    MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error, vector<shared_ptr<NonInputNode>> outputs);
     
     virtual ~MiddleNode();
 

@@ -1,31 +1,31 @@
 #include "MiddleNode.h"
 
 //MiddleNode::MiddleNode(vector<shared_ptr<Node>>* inputs): NonInputNode(inputs)
-MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs): NonInputNode(inputs)
+MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs): NonInputNode(inputs), outputs(vector<shared_ptr<NonInputNode>>())
 {
     //outputs = NULL;
-    outputs = vector<shared_ptr<NonInputNode>>();
+    //outputs = vector<shared_ptr<NonInputNode>>();
 }
 
 //MiddleNode::MiddleNode(vector<shared_ptr<Node>>* inputs, double learningRate) : NonInputNode(inputs, learningRate)
-MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate) : NonInputNode(inputs, learningRate)
+MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum) : NonInputNode(inputs, learningRate, momentum), outputs(vector<shared_ptr<NonInputNode>>())
 {
     //outputs = NULL;
-    outputs = vector<shared_ptr<NonInputNode>>();
+    //outputs = vector<shared_ptr<NonInputNode>>();
 }
 
 //MiddleNode::MiddleNode(vector<shared_ptr<Node>>* inputs, double learningRate, double error) : NonInputNode(inputs, learningRate, error)
-MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double error) : NonInputNode(inputs, learningRate, error)
+MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error) : NonInputNode(inputs, learningRate, momentum, error)
 {
     //outputs = NULL;
-    outputs = vector<shared_ptr<NonInputNode>>();
+    //outputs = vector<shared_ptr<NonInputNode>>();
 }
 
 //MiddleNode::MiddleNode(vector<shared_ptr<Node>>* inputs, double learningRate, double error, vector<shared_ptr<NonInputNode>>* outputs) : NonInputNode(inputs, learningRate, error)
-MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double error, vector<shared_ptr<NonInputNode>> outputs) : NonInputNode(inputs, learningRate, error)
+MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error, vector<shared_ptr<NonInputNode>> outputs) : NonInputNode(inputs, learningRate, momentum, error), outputs(outputs)
 {
     //this->outputs = unique_ptr(outputs);
-    this->outputs = outputs;
+    //this->outputs = outputs;
 }
 
 MiddleNode::~MiddleNode()

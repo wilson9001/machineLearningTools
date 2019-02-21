@@ -1,6 +1,6 @@
 #include "Layer.h"
 
-Layer::Layer(layerTypes layerType, size_t nodeCount, Layer& previousLayer, vector<double> initialOutputs, double learningRate): layerType(layerType)
+Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousLayer, vector<double> initialOutputs, double learningRate): layerType(layerType)
 {
     nodes = make_unique<vector<shared_ptr<Node>>>();
     nodes->reserve(nodeCount);
@@ -11,7 +11,7 @@ Layer::Layer(layerTypes layerType, size_t nodeCount, Layer& previousLayer, vecto
             
             for(size_t i = 0; i < nodeCount; i++)
             {
-                nodes->push_back(make_shared<MiddleNode>(previousLayer.getNodes(), learningRate));
+                nodes->push_back(make_shared<MiddleNode>(previousLayer->getNodes(), learningRate, DEFAULTMOMENTUM));
             }
 
             break;
@@ -31,18 +31,18 @@ Layer::Layer(layerTypes layerType, size_t nodeCount, Layer& previousLayer, vecto
             break;
 
         case layerTypes::nonInput:
-            const vector<shared_ptr<Node>>& inputs = previousLayer.getNodes();
+            const vector<shared_ptr<Node>>& inputs = previousLayer->getNodes();
 
             for (size_t i = 0; i < nodeCount; i++)
             {
-                nodes->push_back(make_shared<NonInputNode>(previousLayer.getNodes(), learningRate));
+                nodes->push_back(make_shared<NonInputNode>(previousLayer->getNodes(), learningRate, DEFAULTMOMENTUM));
             }
     }
 
     bias = make_unique<Node>(DEFAULTBIASVALUE);
 }
 
-Layer::Layer(layerTypes layerType, size_t nodeCount, Layer& previousLayer, vector<double> initialOutputs, double learningRate, double bias): Layer(layerType, nodeCount, previousLayer, initialOutputs, learningRate)
+Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousLayer, vector<double> initialOutputs, double learningRate, double bias): Layer(layerType, nodeCount, previousLayer, initialOutputs, learningRate)
 {
     this->bias.reset();
     this->bias = make_unique<Node>(bias);
@@ -121,4 +121,14 @@ vector<double> Layer::getOutputs()
     }
 
     return outputs;
+}
+
+void Layer::setBias(double newBias)
+{
+    bias->setOutput(newBias);
+}
+
+size_t Layer::getNodeCount()
+{
+    return nodes->size();
 }
