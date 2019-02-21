@@ -8,16 +8,17 @@ class NeuralNet: public SupervisedLearner
 {
     private:
     vector<shared_ptr<Layer>> layers;
-    const size_t DEFAULTLAYERCOUNT = 3;
+    const size_t DEFAULTLAYERCOUNT = 1;
     size_t layerCount;
     const double DEFAULTLEARNINGRATE = .1;
 
     protected:
     void createNeuralNetwork(vector<double> initialInputs, size_t targetCount);
-
+    Rand &m_rand;
+    
     public:
-    NeuralNet();
-    NeuralNet(size_t layerCount);
+    NeuralNet(Rand &r);
+    //NeuralNet(size_t layerCount);
     //NeuralNet(size_t layerCount, size_t nodeCount);
     //NeuralNet(size_t layerCount, vector<size_t> numberNodesInLayers);
     ~NeuralNet();

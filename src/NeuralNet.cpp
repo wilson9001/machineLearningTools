@@ -1,10 +1,14 @@
 #include "NeuralNet.h"
 
-NeuralNet::NeuralNet(): layerCount(DEFAULTLAYERCOUNT), layers(vector<unique_ptr<Layer>>())
-{}
+NeuralNet::NeuralNet(Rand &r): SupervisedLearner(), m_rand(r)//, layerCount(DEFAULTLAYERCOUNT), layers(vector<shared_ptr<Layer>>())
+{
+    m_rand = r;
+    layerCount = DEFAULTLAYERCOUNT;
+    layers = vector<shared_ptr<Layer>>();
+}
 
-NeuralNet::NeuralNet(size_t layerCount): layerCount(layerCount), layers(vector<unique_ptr<Layer>>())
-{}
+/*NeuralNet::NeuralNet(size_t layerCount): layerCount(layerCount), layers(vector<shared_ptr<Layer>>())
+{}*/
 
 NeuralNet::~NeuralNet()
 {}
@@ -23,7 +27,7 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         layers.at(0)->setOutputs(features.row(i));
 
         //pull inputs through network
-        for(unique_ptr<Layer>& layer : layers)
+        for(shared_ptr<Layer>& layer : layers)
         {
             layer->calculateOutputs();
         }
@@ -43,7 +47,7 @@ void NeuralNet::predict(const vector<double> &features, vector<double> &labels)
      layers.at(0)->setOutputs(featuresCopy);
 
         //pull inputs through network
-        for(unique_ptr<Layer>& layer : layers)
+        for(shared_ptr<Layer>& layer : layers)
         {
             layer->calculateOutputs();
         }
@@ -65,10 +69,17 @@ void NeuralNet::createNeuralNetwork(vector<double> initialInputs, size_t targetC
 
     layers.push_back(make_shared<Layer>(layerTypes::input, initialInputs.size(), nullptr, initialInputs, DEFAULTLEARNINGRATE));
 
-    for (size_t i = 1; i <= middleLayers; i++)
+    size_t i;
+    for (i = 1; i <= middleLayers; i++)
     {
         layers.push_back(make_shared<Layer>(layerTypes::middle, hiddenNodeLayerSize, layers.back(), vector<double>(), DEFAULTLEARNINGRATE));
     }
 
     layers.push_back(make_shared<Layer>(layerTypes::nonInput, targetCount, layers.back(), vector<double>(), DEFAULTLEARNINGRATE));
+    
+    //connect backpointers
+    for(++i; i > 0; i--)
+    {
+        layers.at(i-1)->setNodeOutputs(layers.at(i)->getNodes());
+    }
 }

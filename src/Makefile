@@ -34,6 +34,11 @@ CPP_FILES =\
 	matrix.cpp\
 	rand.cpp\
 	perceptron.cpp\
+	NeuralNet.cpp\
+	Node.cpp\
+	NonInputNode.cpp\
+	MiddleNode.cpp\
+	Layer.cpp\
 
 ################
 # Lists

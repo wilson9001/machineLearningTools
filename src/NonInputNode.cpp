@@ -32,13 +32,12 @@ void NonInputNode::createWeights()
 }
 
 //NonInputNode::NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs): Node()
-NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs): Node(), inputs(inputs), learningRate(DEFAULTLEARNINGRATE), error(DEFAULTERROR), momentum(DEFAULTMOMENTUM)
+NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs): Node()//, inputs(inputs), learningRate(DEFAULTLEARNINGRATE), momentum(DEFAULTMOMENTUM), error(DEFAULTERROR)
 {
-    //this->inputs = move(inputs)
-    //this->inputs = inputs;
-    //learningRate = DEFAULTLEARNINGRATE;
-    //error = DEFAULTERROR;
-    //this->momentum = momentum;
+    this->inputs = inputs;
+    learningRate = DEFAULTLEARNINGRATE;
+    error = DEFAULTERROR;
+    momentum = DEFAULTMOMENTUM;
 
     createWeights();
 }
@@ -129,4 +128,19 @@ void NonInputNode::calculateOutput()
 double NonInputNode::getMomentum()
 {
     return momentum;
+}
+
+vector<double> NonInputNode::getWeights()
+{
+    return weights;
+}
+
+vector<shared_ptr<Node>> NonInputNode::getInputs()
+{
+    return inputs;
+}
+
+void NonInputNode::useMomentum(double momentum)
+{
+    this->momentum = momentum;
 }

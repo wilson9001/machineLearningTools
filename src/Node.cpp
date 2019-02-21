@@ -2,8 +2,8 @@
 
 Node::Node()
 {
-    ifstream uuidGetter(KERNELUUIDGEN);
-    uuidGetter.open;
+    ifstream uuidGetter(KERNELUUIDGEN, ifstream::in);
+    //uuidGetter.open;
     if(uuidGetter.is_open())
     {
         getline(uuidGetter, uuid);

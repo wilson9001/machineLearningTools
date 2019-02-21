@@ -99,7 +99,7 @@ vector<vector<double>> Layer::getWeights()
 
 void Layer::setOutputs(vector<double>& outputs)
 {
-    if(outputs.size != nodes->size())
+    if(outputs.size() != nodes->size())
     {
         ThrowError("Number of outputs to set != number of nodes in layer");
     }
@@ -131,4 +131,12 @@ void Layer::setBias(double newBias)
 size_t Layer::getNodeCount()
 {
     return nodes->size();
+}
+
+void Layer::setNodeOutputs(vector<shared_ptr<Node>> nodeOutputs)
+{
+    for(shared_ptr<Node>& node : *nodes)
+    {
+        node->setOutputs(nodeOutputs);
+    }
 }

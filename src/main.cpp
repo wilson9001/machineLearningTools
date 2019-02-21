@@ -133,7 +133,7 @@ SupervisedLearner* getLearner(string model, Rand& r)
 	else if (model.compare("perceptron") == 0)
 		return new Perceptron(r);
 	else if (model.compare("neuralnet") == 0)
-		ThrowError("Sorry, ", model, " is not yet implemented");
+		return new NeuralNet(r);
 	else if (model.compare("decisiontree") == 0)
 		ThrowError("Sorry, ", model, " is not yet implemented");
 	else if (model.compare("naivebayes") == 0)
@@ -163,7 +163,7 @@ void doit(ArgParser& parser)
 	// This line says to "delete(learner)" when this object (ap_learner) goes out of scope. This
 	// technique is better than just calling "delete(learner)" ourselves at the end
 	// of this method because this will clean up memory even if an exception is thrown.
-	auto_ptr<SupervisedLearner> ap_learner ( learner );
+	/*auto_ptr*/unique_ptr<SupervisedLearner> ap_learner ( learner );//Changed toolkit here.
 
 	// Load the ARFF file
 	string fileName = parser.getARFF();

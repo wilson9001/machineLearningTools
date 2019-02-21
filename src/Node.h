@@ -6,7 +6,8 @@
 #include <vector>
 #include <memory>
 #include "error.h"
-#include "MiddleNode.h"
+//#include "MiddleNode.h"
+//#include "NonInputNode.h"
 
 using namespace std;
 
@@ -39,8 +40,8 @@ class Node
     virtual void useMomentum(double momentum){}
     virtual void adjustWeights(){}
     virtual void calculateOutput(){}
-    virtual void setOutputs(vector<shared_ptr<NonInputNode>> outputs){}
-    virtual void addOutput(shared_ptr<NonInputNode> output){};
+    virtual void setOutputs(vector<shared_ptr<Node>> outputs){}
+    virtual void addOutput(shared_ptr<Node> output){};
     virtual double getMomentum(){return 0;}
 };
 

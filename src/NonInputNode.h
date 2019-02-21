@@ -21,7 +21,6 @@ class NonInputNode: public Node
     double momentum;
     double error;
     double learningRate;
-    double momentum;
     const double DEFAULTLEARNINGRATE = .1;
     const double DEFAULTERROR = 0;
     const double DEFAULTMOMENTUM = 0;

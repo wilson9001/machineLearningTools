@@ -34,6 +34,7 @@ class Layer
     Node& getBias();
     vector<shared_ptr<Node>> getNodes();
     void setOutputs(vector<double>& outputs);
+    void setNodeOutputs(vector<shared_ptr<Node>> nodeOutputs);
     void calculateOutputs();
     void backPropogateError(vector<double>& targets);
     vector<double> getOutputs();
