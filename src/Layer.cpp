@@ -1,17 +1,23 @@
 #include "Layer.h"
+#ifdef _DEBUG
+#include <iostream>
+#endif
 
 Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousLayer, vector<double> initialOutputs, double learningRate): layerType(layerType)
 {
     nodes = make_unique<vector<shared_ptr<Node>>>();
+    bias = make_shared<Node>(DEFAULTBIASVALUE);
     nodes->reserve(nodeCount);
+    vector<shared_ptr<Node>> inputs;
 
     //create nodes
     switch (layerType){
         case layerTypes::middle:
-            
+            inputs = previousLayer->getNodes();
+            inputs.push_back(bias);
             for(size_t i = 0; i < nodeCount; i++)
             {
-                nodes->push_back(make_shared<MiddleNode>(previousLayer->getNodes(), learningRate, DEFAULTMOMENTUM));
+                nodes->push_back(make_shared<MiddleNode>(inputs, learningRate, DEFAULTMOMENTUM));
             }
 
             break;
@@ -19,9 +25,11 @@ Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousL
         case layerTypes::input:
 
             if(nodeCount != initialOutputs.size())
-                {
+            {
                     ThrowError("Number of initial outputs provided != number of output nodes requested");
-                }
+            }
+
+            nodes->reserve(nodeCount);
 
             for (double initialOutput : initialOutputs)
             {
@@ -31,21 +39,21 @@ Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousL
             break;
 
         case layerTypes::nonInput:
-            const vector<shared_ptr<Node>>& inputs = previousLayer->getNodes();
+        
+            inputs = previousLayer->getNodes();
+            inputs.push_back(bias);
 
             for (size_t i = 0; i < nodeCount; i++)
             {
-                nodes->push_back(make_shared<NonInputNode>(previousLayer->getNodes(), learningRate, DEFAULTMOMENTUM));
+                nodes->push_back(make_shared<NonInputNode>(inputs, learningRate, DEFAULTMOMENTUM));
             }
     }
-
-    bias = make_unique<Node>(DEFAULTBIASVALUE);
 }
 
 Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousLayer, vector<double> initialOutputs, double learningRate, double bias): Layer(layerType, nodeCount, previousLayer, initialOutputs, learningRate)
 {
-    this->bias.reset();
-    this->bias = make_unique<Node>(bias);
+    this->bias->setOutput(bias);
+    //this->bias = make_shared<Node>(bias);
 }
 
 Layer::~Layer()
@@ -135,8 +143,23 @@ size_t Layer::getNodeCount()
 
 void Layer::setNodeOutputs(vector<shared_ptr<Node>> nodeOutputs)
 {
-    for(shared_ptr<Node>& node : *nodes)
+    #ifdef _DEBUG
+    if(nodeOutputs.empty())
+    {
+        cout << "WARNING: SETTING EMPTY VECTOR AS NODE OUTPUTS IN A LAYER" << endl;
+    }
+    else
+    {
+        cout << "Setting " << nodeOutputs.size() << " nodes as outputs" << endl;
+    }
+    #endif
+
+    /*for(shared_ptr<Node>& node : *nodes)
     {
         node->setOutputs(nodeOutputs);
+    }*/
+    for(size_t i = 0; i < nodes->size(); i++)
+    {
+        nodes->at(i)->setOutputs(nodeOutputs);
     }
 }

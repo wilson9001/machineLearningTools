@@ -6,33 +6,21 @@ void NonInputNode::createWeights()
     mt19937 runGenerator(generatorSeed()); //Standard mersenne_twister_engine
     uniform_real_distribution<> distributeInRange(WEIGHTINITLOWERBOUND, WEIGHTINITUPPERBOUND);
 
-    //weights = make_unique<vector<double>>(); //unique_ptr(new vector<double>());
     weights = vector<double>();
     input_weightIndex_map = unordered_map<string, size_t>();
-    //(*weights).reserve((*inputs).size());
     weights.reserve(inputs.size());
 
-    //for (size_t i = 0; i < (*inputs).size(); i++)
-    /*for (size_t i = 0; i < inputs.size(); i++)
-    {
-        //(*weights).push_back(distributeInRange(runGenerator));
-        weights.push_back(distributeInRange(runGenerator));
-    }*/
-
-    //for(const shared_ptr<Node>& inputPtr : inputs)
     for (size_t i = 0; i < inputs.size(); i++)
     {
         double newWeight = distributeInRange(runGenerator);
         weights.push_back(newWeight);
         oldWeights.push_back(newWeight);
 
-        //input_weightIndex_map.emplace((*(inputs.at(i))).getUUID(), i);
         input_weightIndex_map.emplace(inputs.at(i)->getUUID(), i);
     }
 }
 
-//NonInputNode::NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs): Node()
-NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs): Node()//, inputs(inputs), learningRate(DEFAULTLEARNINGRATE), momentum(DEFAULTMOMENTUM), error(DEFAULTERROR)
+NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs): Node()
 {
     this->inputs = inputs;
     learningRate = DEFAULTLEARNINGRATE;
@@ -42,14 +30,12 @@ NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs): Node()//, inputs(in
     createWeights();
 }
 
-//NonInputNode::NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs, double learningRate): NonInputNode(inputs)
-NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum): NonInputNode(inputs)//, learningRate(learningRate), momentum(momentum)
+NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum): NonInputNode(inputs)
 {
     this->learningRate = learningRate;
     this->momentum = momentum;
 }
 
-//NonInputNode::NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs, double learningRate, double error): NonInputNode(inputs, learningRate)
 NonInputNode::NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error): NonInputNode(inputs, learningRate, momentum)//, error(error)
 {
     this->error = error;
@@ -60,15 +46,11 @@ NonInputNode::~NonInputNode()
 
 void NonInputNode::adjustWeights()
 {
-    //for(size_t i = 0; i < (*weights).size(); i++)
-
     double previousWeightChange = 0;
     double weightChange;
     
     for(size_t i = 0; i < weights.size(); i++)
     {
-        //(*weights).at(i) += ((*weights).at(i)*error*(*((*inputs).at(i))).getOutput());
-        //weights.at(i) += (weights.at(i)*error*((*(inputs.at(i))).getOutput()));
         oldWeights.at(i) = weights.at(i);
 
         weightChange = (momentum and i > 0) ? 
@@ -83,7 +65,6 @@ void NonInputNode::adjustWeights()
 
 size_t NonInputNode::getInputSize()
 {
-    //return (*inputs).size();
     return inputs.size();
 }
 

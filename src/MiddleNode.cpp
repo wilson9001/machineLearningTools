@@ -1,53 +1,38 @@
 #include "MiddleNode.h"
+#ifdef _DEBUG
+#include <iostream>
+#endif
 
-//MiddleNode::MiddleNode(vector<shared_ptr<Node>>* inputs): NonInputNode(inputs)
 MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs): NonInputNode(inputs), outputs(vector<shared_ptr<NonInputNode>>())
-{
-    //outputs = NULL;
-    //outputs = vector<shared_ptr<NonInputNode>>();
-}
+{}
 
-//MiddleNode::MiddleNode(vector<shared_ptr<Node>>* inputs, double learningRate) : NonInputNode(inputs, learningRate)
 MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum) : NonInputNode(inputs, learningRate, momentum), outputs(vector<shared_ptr<NonInputNode>>())
-{
-    //outputs = NULL;
-    //outputs = vector<shared_ptr<NonInputNode>>();
-}
+{}
 
-//MiddleNode::MiddleNode(vector<shared_ptr<Node>>* inputs, double learningRate, double error) : NonInputNode(inputs, learningRate, error)
 MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error) : NonInputNode(inputs, learningRate, momentum, error)
-{
-    //outputs = NULL;
-    //outputs = vector<shared_ptr<NonInputNode>>();
-}
+{}
 
-//MiddleNode::MiddleNode(vector<shared_ptr<Node>>* inputs, double learningRate, double error, vector<shared_ptr<NonInputNode>>* outputs) : NonInputNode(inputs, learningRate, error)
 MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error, vector<shared_ptr<NonInputNode>> outputs) : NonInputNode(inputs, learningRate, momentum, error), outputs(outputs)
-{
-    //this->outputs = unique_ptr(outputs);
-    //this->outputs = outputs;
-}
+{}
 
 MiddleNode::~MiddleNode()
-{
-    //outputs = NULL;
-}
+{}
 
-vector<shared_ptr<NonInputNode>>& MiddleNode::getOutputs()
+vector<shared_ptr<Node>>& MiddleNode::getOutputs()
 {
-    //return *outputs;
     return outputs;
 }
 
-void MiddleNode::setOutputs(vector<shared_ptr<NonInputNode>> outputs)
+void MiddleNode::setOutputs(vector<shared_ptr<Node>> outputs)
 {
-    //this->outputs.reset();
-    //this->outputs = unique_ptr(outputs);
+    #ifdef _DEBUG
+    cout << "Inside setOutputs there are  " << outputs.size() << " outputs to be set" << endl;
+    #endif
 
     this->outputs = outputs;
 }
 
-void MiddleNode::addOutput(shared_ptr<NonInputNode> output)
+void MiddleNode::addOutput(shared_ptr<Node> output)
 {
     outputs.push_back(output);
 }
@@ -65,7 +50,6 @@ void MiddleNode::calculateError(double target)
 
     for(size_t i = 0; i < outputs.size(); i++)
     {
-        //errorSum += ((*(outputs.at(i))).getError() * weights.at(i));
         errorSum += (outputs.at(i)->getError() * outputs.at(i)->getOldWeightForInput(uuid));
     }
 

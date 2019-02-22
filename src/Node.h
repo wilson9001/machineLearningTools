@@ -6,6 +6,9 @@
 #include <vector>
 #include <memory>
 #include "error.h"
+#ifdef _DEBUG
+#include <iostream>
+#endif
 //#include "MiddleNode.h"
 //#include "NonInputNode.h"
 
@@ -40,9 +43,15 @@ class Node
     virtual void useMomentum(double momentum){}
     virtual void adjustWeights(){}
     virtual void calculateOutput(){}
-    virtual void setOutputs(vector<shared_ptr<Node>> outputs){}
-    virtual void addOutput(shared_ptr<Node> output){};
+    virtual void setOutputs(vector<shared_ptr<Node>> outputs)
+    {
+        #ifdef _DEBUG
+        cout << "Inside setOutputs (base class) there are  " << outputs.size() << " outputs to be disregarded" << endl;
+        #endif
+    }
+    virtual void addOutput(shared_ptr<Node> output){}
     virtual double getMomentum(){return 0;}
+    virtual vector<shared_ptr<Node>>& getOutputs(){return vector<shared_ptr<Node>>();}
 };
 
 #endif

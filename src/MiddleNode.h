@@ -24,11 +24,11 @@ class MiddleNode : public NonInputNode
     
     virtual ~MiddleNode();
 
-    vector<shared_ptr<NonInputNode>>& getOutputs();
+    vector<shared_ptr<Node>>& getOutputs();
 
     //void setOutputs(vector<shared_ptr<NonInputNode>>* outputs);
-    void setOutputs(vector<shared_ptr<NonInputNode>> outputs);
-    void addOutput(shared_ptr<NonInputNode> output);
+    void setOutputs(vector<shared_ptr<Node>> outputs);//suspect these cause the function to not be overloaded... was NonInputNode
+    void addOutput(shared_ptr<Node> output);
 };
 
 #endif

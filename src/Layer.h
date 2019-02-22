@@ -11,7 +11,7 @@ class Layer
     unique_ptr<vector<shared_ptr<Node>>> nodes;
     /*unique_ptr<vector<shared_ptr<MiddleNode>>> middleNodes;
     unique_ptr<vector<shared_ptr<NonInputNode>>> NonInputNodes;*/
-    unique_ptr<Node> bias;
+    shared_ptr<Node> bias;
     layerTypes layerType;
     const double DEFAULTBIASVALUE = 1;
     const double DEFAULTMOMENTUM = 0;

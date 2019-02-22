@@ -12,8 +12,6 @@
 class NonInputNode: public Node
 {
     protected:
-    //unique_ptr<vector<double>> weights;
-    //unique_ptr<vector<shared_ptr<Node>>> inputs;
     vector<double> weights;
     vector<double> oldWeights;
     vector<shared_ptr<Node>> inputs;
@@ -30,10 +28,6 @@ class NonInputNode: public Node
     void createWeights();
     
     public:
-    // NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs);
-    // NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs, double learningRate);
-    // NonInputNode(unique_ptr<vector<shared_ptr<Node>>>& inputs, double learningRate, double error);
-
     NonInputNode(vector<shared_ptr<Node>> inputs);
     NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum);
     NonInputNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error);
@@ -50,6 +44,12 @@ class NonInputNode: public Node
     void adjustWeights();
     void calculateOutput();
     double getMomentum();
+    /*virtual void setOutputs(vector<shared_ptr<Node>> outputs)
+    {
+        #ifdef _DEBUG
+        cout << "Inside setOutputs (middle class) there are  " << outputs.size() << " outputs to be disregarded" << endl;
+        #endif
+    }*/
 };
 
 #endif
