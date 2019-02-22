@@ -37,6 +37,7 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
     double currentEpochAccuracy = 0;
     double previousEpochAccuracy = 0;
     double changeInAccuracy = 0;
+    
     //run training epochs
     do
     {
@@ -45,9 +46,14 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         {
             layers.at(0)->setOutputs(features.row(i));
 
-            /*#ifdef _DEBUG
-            cout << "training on row " << i << endl;
-            #endif*/
+            #ifdef _DEBUG
+            /*cout << "training on row " << i << ": ";
+            for(double input : features.row(i))
+            {
+                cout << input << " ";
+            }
+            cout << endl;*/
+            #endif
 
             //pull inputs through network
             for(shared_ptr<Layer>& layer : layers)
@@ -85,8 +91,8 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
 
         features.shuffleRows(m_rand, &labels);
 
-    } while (epochsSinceBigChange < EPOCHWITHNOCHANGELIMIT || currentEpochAccuracy <= .8);
-    
+    } while (epochsSinceBigChange < EPOCHWITHNOCHANGELIMIT /*|| currentEpochAccuracy <= .8*/);
+
     #ifdef _DEBUG
     cout << "Total training epochs: " << totalEpochs << endl;
     #endif

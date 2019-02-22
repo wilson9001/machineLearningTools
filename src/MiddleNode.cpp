@@ -39,9 +39,9 @@ void MiddleNode::addOutput(shared_ptr<Node> output)
 
 void MiddleNode::calculateError(double target)
 {
-    /*#ifdef _DEBUG
-    cout << "Calculating error for middle node with " << outputs.size() << " nodes" << endl;
-    #endif*/
+    #ifdef _DEBUG
+    cout << "Calculating error for middle node with " << outputs.size() << " nodes:" << endl;
+    #endif
 
     if(outputs.empty())
     {
@@ -52,16 +52,16 @@ void MiddleNode::calculateError(double target)
 
     for(size_t i = 0; i < outputs.size(); i++)
     {
-        /*#ifdef _DEBUG
-        cout << "output " << i;
-        cout << " error " << outputs.at(i)->getError() << " old weight " << outputs.at(i)->getOldWeightForInput(uuid) << endl;
-        #endif*/
+        #ifdef _DEBUG
+        cout << "output node " << i;
+        cout << ": error " << outputs.at(i)->getError() << " old weight " << outputs.at(i)->getOldWeightForInput(uuid) << endl;
+        #endif
 
         errorSum += (outputs.at(i)->getError() * outputs.at(i)->getOldWeightForInput(uuid));
     
-        /*#ifdef _DEBUG
-        cout << "Error sum calculated for " << i << endl;
-        #endif*/
+        #ifdef _DEBUG
+        //cout << "Error sum: " << errorSum << endl;
+        #endif
     }
 
     /*#ifdef _DEBUG
@@ -72,7 +72,7 @@ void MiddleNode::calculateError(double target)
 
     error = errorSum;
 
-    /*#ifdef _DEBUG
-    cout << "Final error is " << errorSum << endl;
-    #endif*/
+    #ifdef _DEBUG
+    cout << "Error for middle node is " << error << endl;
+    #endif
 }

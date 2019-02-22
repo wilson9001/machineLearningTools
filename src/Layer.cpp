@@ -116,9 +116,21 @@ void Layer::setOutputs(vector<double>& outputs)
         ThrowError("Number of outputs to set != number of nodes in layer");
     }
 
+    #ifdef _DEBUG
+    cout << "\n--------------------------------\nSetting outputs in layer\n";
+    #endif
+
     for(size_t i = 0; i < outputs.size(); i++)
     {
+        #ifdef _DEBUG
+        cout << "old output: " << nodes->at(i)->getOutput() << " potential new output: " << outputs.at(i);
+        #endif
+
         nodes->at(i)->setOutput(outputs.at(i));
+
+        #ifdef _DEBUG
+        cout << " actual new output: " << nodes->at(i)->getOutput() << endl;
+        #endif
     }
 }
 

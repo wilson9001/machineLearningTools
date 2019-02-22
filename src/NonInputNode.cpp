@@ -49,18 +49,45 @@ void NonInputNode::adjustWeights()
     double previousWeightChange = 0;
     double weightChange;
     
+    #ifdef _DEBUG
+    //cout << "\nWeight changes for output node are: ";
+    #endif
+
     for(size_t i = 0; i < weights.size(); i++)
     {
+        #ifdef _DEBUG
+        //cout << " old: " << oldWeights.at(i);
+        #endif
+
         oldWeights.at(i) = weights.at(i);
 
-        weightChange = (momentum and i > 0) ? 
-        (learningRate * error * inputs.at(i)->getOutput()) + (momentum * previousWeightChange) 
-        : (learningRate * error * (inputs.at(i)->getOutput()));
+        weightChange = (learningRate * error * inputs.at(i)->getOutput()) + (momentum * previousWeightChange);
 
-       previousWeightChange = weightChange;
+        previousWeightChange = weightChange;
+
+        #ifdef _DEBUG
+        //cout << " weight change: " << weightChange;
+        #endif
 
         weights.at(i) += weightChange;
+
+        #ifdef _DEBUG
+        if(oldWeights.at(i) == weights.at(i))
+        {
+        //    cout << ", but weight was not changed.";
+        }
+        else
+        {
+        //    cout << ", and weight was changed.";
+        }
+        
+        //cout << " new: " << weights.at(i);
+        #endif
     }
+
+    #ifdef _DEBUG
+    //cout << endl << endl;
+    #endif
 }
 
 size_t NonInputNode::getInputSize()
@@ -72,6 +99,10 @@ size_t NonInputNode::getInputSize()
 void NonInputNode::calculateError(double target)
 {
     error = (target - output) * output * (1 - output);
+
+    #ifdef _DEBUG
+    cout << "\nTarget, output, error for output node is " << target << ", " << output << ", " << error << endl << endl;
+    #endif
 }
 
 double NonInputNode::getError()
@@ -96,14 +127,37 @@ void NonInputNode::calculateOutput()
         ThrowError("Attempted to calculate node output with no inputs");
     }
 
-    for(shared_ptr<Node>& input : inputs)
+    #ifdef _DEBUG
+    cout << "Calculating output of node. Inputs, weights are: ";
+    #endif
+
+    /*for(shared_ptr<Node>& input : inputs)
     {
         net += input->getOutput();
+        #ifdef _DEBUG
+        cout << input->getOutput() << " ";//weights aren't used?
+        #endif
+    }*/
+
+    for(size_t i = 0; i < inputs.size(); i++)
+    {
+        net += (inputs.at(i)->getOutput() * weights.at(i));
+        #ifdef _DEBUG
+        cout << "{" << inputs.at(i)->getOutput() << ", " << weights.at(i) << "} ";
+        #endif
     }
+
+    #ifdef _DEBUG
+    cout << " final net: " << net << endl;
+    #endif
 
     net *= -1;
 
     output = 1/(1+exp(net));
+
+    #ifdef _DEBUG
+    cout << "output: " << output << endl;
+    #endif
 }
 
 double NonInputNode::getMomentum()

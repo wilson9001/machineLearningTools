@@ -34,7 +34,12 @@ class Node
 
     //This is kind of hackish but it simplifies higher-level operations
     
-    virtual void calculateError(double target){}
+    virtual void calculateError(double target)
+    {
+        #ifdef _DEBUG
+        cout << "Calculate error called in Node class. Doing nothing.\n";
+        #endif
+    }
     virtual vector<double> getWeights(){return vector<double>();}
     virtual double getError(){return 0;}
     virtual vector<shared_ptr<Node>> getInputs(){return vector<shared_ptr<Node>>();}
@@ -42,7 +47,12 @@ class Node
     virtual double getOldWeightForInput(string inputNodeUUID){return 0;}
     virtual void useMomentum(double momentum){}
     virtual void adjustWeights(){}
-    virtual void calculateOutput(){}
+    virtual void calculateOutput()
+    {
+        #ifdef _DEBUG
+        cout << "Calculate output called in Node class. Doing nothing.\n";
+        #endif
+    }
     virtual void setOutputs(vector<shared_ptr<Node>> outputs)
     {
         /*#ifdef _DEBUG
