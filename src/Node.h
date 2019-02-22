@@ -51,7 +51,7 @@ class Node
     }
     virtual void addOutput(shared_ptr<Node> output){}
     virtual double getMomentum(){return 0;}
-    virtual vector<shared_ptr<Node>>& getOutputs(){return vector<shared_ptr<Node>>();}
+    virtual vector<shared_ptr<Node>> getOutputs(){return vector<shared_ptr<Node>>();}
 };
 
 #endif

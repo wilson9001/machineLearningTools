@@ -3,22 +3,22 @@
 #include <iostream>
 #endif
 
-MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs): NonInputNode(inputs), outputs(vector<shared_ptr<NonInputNode>>())
+MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs): NonInputNode(inputs), outputs(vector<shared_ptr<Node>>())
 {}
 
-MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum) : NonInputNode(inputs, learningRate, momentum), outputs(vector<shared_ptr<NonInputNode>>())
+MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum) : NonInputNode(inputs, learningRate, momentum), outputs(vector<shared_ptr<Node>>())
 {}
 
-MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error) : NonInputNode(inputs, learningRate, momentum, error)
+MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error) : NonInputNode(inputs, learningRate, momentum, error), outputs(vector<shared_ptr<Node>>())
 {}
 
-MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error, vector<shared_ptr<NonInputNode>> outputs) : NonInputNode(inputs, learningRate, momentum, error), outputs(outputs)
+MiddleNode::MiddleNode(vector<shared_ptr<Node>> inputs, double learningRate, double momentum, double error, vector<shared_ptr<Node>> outputs) : NonInputNode(inputs, learningRate, momentum, error), outputs(outputs)
 {}
 
 MiddleNode::~MiddleNode()
 {}
 
-vector<shared_ptr<Node>>& MiddleNode::getOutputs()
+vector<shared_ptr<Node>> MiddleNode::getOutputs()
 {
     return outputs;
 }
