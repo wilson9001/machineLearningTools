@@ -29,9 +29,9 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         createNeuralNetwork(features.row(0), labels.cols());
     }
 
-    /*#ifdef _DEBUG
-    cout << "Beginning training..." << endl;
-    #endif*/
+    #ifdef _DEBUG
+    cout << "There are " << features.rows() << " rows of training data" << endl;
+    #endif
     size_t totalEpochs = 0;
     size_t epochsSinceBigChange = 0;
     double currentEpochAccuracy = 0;
@@ -46,7 +46,7 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
             layers.at(0)->setOutputs(features.row(i));
 
             /*#ifdef _DEBUG
-            cout << "Calculating output" << endl;
+            cout << "training on row " << i << endl;
             #endif*/
 
             //pull inputs through network
@@ -71,6 +71,11 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         }
 
         currentEpochAccuracy = measureAccuracy(features, labels);
+
+        #ifdef _DEBUG
+        cout << "Accuracy of epoch " << totalEpochs << ": " << currentEpochAccuracy << endl;
+        #endif
+
         changeInAccuracy = currentEpochAccuracy - previousEpochAccuracy;
 
         changeInAccuracy < EPOCHCHANGETHRESHOLD ? ++epochsSinceBigChange : epochsSinceBigChange = 0;
@@ -78,7 +83,9 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         totalEpochs++;
         previousEpochAccuracy = currentEpochAccuracy;
 
-    } while (epochsSinceBigChange < EPOCHWITHNOCHANGELIMIT);
+        features.shuffleRows(m_rand, &labels);
+
+    } while (epochsSinceBigChange < EPOCHWITHNOCHANGELIMIT || currentEpochAccuracy <= .8);
     
     #ifdef _DEBUG
     cout << "Total training epochs: " << totalEpochs << endl;

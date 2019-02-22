@@ -12,7 +12,7 @@ class NeuralNet: public SupervisedLearner
     size_t middleLayerCount;
     const double DEFAULTLEARNINGRATE = .1;
     const size_t EPOCHWITHNOCHANGELIMIT = 5;
-    const double EPOCHCHANGETHRESHOLD = .05;
+    const double EPOCHCHANGETHRESHOLD = .005;
 
     protected:
     void createNeuralNetwork(vector<double> initialInputs, size_t targetCount);
