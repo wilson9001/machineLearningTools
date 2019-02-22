@@ -32,41 +32,57 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
     /*#ifdef _DEBUG
     cout << "Beginning training..." << endl;
     #endif*/
-
-    //run training
-    for(size_t i = 0; i < features.rows(); i++)
+    size_t totalEpochs = 0;
+    size_t epochsSinceBigChange = 0;
+    double currentEpochAccuracy = 0;
+    double previousEpochAccuracy = 0;
+    double changeInAccuracy = 0;
+    //run training epochs
+    do
     {
-        layers.at(0)->setOutputs(features.row(i));
-
-        /*#ifdef _DEBUG
-        cout << "Calculating output" << endl;
-        #endif*/
-
-        //pull inputs through network
-        for(shared_ptr<Layer>& layer : layers)
+        //run 1 epoch of training
+        for(size_t i = 0; i < features.rows(); i++)
         {
-            layer->calculateOutputs();
-        }
+            layers.at(0)->setOutputs(features.row(i));
 
-        /*#ifdef _DEBUG
-        cout << "Backpropogating error for layer:" << endl;
-        #endif*/
-
-        //propogate error back through network
-        for(size_t j = (layers.size() - 1); j > 0; j--)
-        {
             /*#ifdef _DEBUG
-            cout << j << endl;
+            cout << "Calculating output" << endl;
             #endif*/
 
-            layers.at(j)->backPropogateError(labels.row(i));
-        }
-    }
+            //pull inputs through network
+            for(shared_ptr<Layer>& layer : layers)
+            {
+                layer->calculateOutputs();
+            }
 
+            /*#ifdef _DEBUG
+            cout << "Backpropogating error for layer:" << endl;
+            #endif*/
+
+            //propogate error back through network
+            for(size_t j = (layers.size() - 1); j > 0; j--)
+            {
+                /*#ifdef _DEBUG
+                cout << j << endl;
+                #endif*/
+
+                layers.at(j)->backPropogateError(labels.row(i));
+            }
+        }
+
+        currentEpochAccuracy = measureAccuracy(features, labels);
+        changeInAccuracy = currentEpochAccuracy - previousEpochAccuracy;
+
+        changeInAccuracy < EPOCHCHANGETHRESHOLD ? ++epochsSinceBigChange : epochsSinceBigChange = 0;
+        
+        totalEpochs++;
+        previousEpochAccuracy = currentEpochAccuracy;
+
+    } while (epochsSinceBigChange < EPOCHWITHNOCHANGELIMIT);
     
-    /*#ifdef _DEBUG
-    cout << "End Training" << endl;
-    #endif*/
+    #ifdef _DEBUG
+    cout << "Total training epochs: " << totalEpochs << endl;
+    #endif
 }
 
 void NeuralNet::predict(const vector<double> &features, vector<double> &labels)
