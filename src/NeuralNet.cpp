@@ -11,7 +11,14 @@ NeuralNet::NeuralNet(Rand &r): SupervisedLearner(), m_rand(r)//, layerCount(DEFA
 
     m_rand = r;
     //Add +1 for layer that interacts with inputs before first middle layer.
-    middleLayerCount = DEFAULTMIDDLELAYERCOUNT + 1;
+    middleLayerCount = DEFAULTMIDDLELAYERCOUNT;
+
+    middleLayerCount++;
+
+    #ifdef _DEBUG
+    cout << "Created neural net with middle layers set to " << middleLayerCount << endl;
+    #endif
+
     layers = vector<shared_ptr<Layer>>();
 }
 
@@ -37,7 +44,7 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
     double currentEpochAccuracy = 0;
     double previousEpochAccuracy = 0;
     double changeInAccuracy = 0;
-    
+
     //run training epochs
     do
     {
@@ -135,35 +142,35 @@ void NeuralNet::createNeuralNetwork(vector<double> initialInputs, size_t targetC
     size_t hiddenNodeLayerSize = 2 * initialInputs.size();
     layers.clear();
 
-    /*#ifdef _DEBUG
+    #ifdef _DEBUG
     cout << "Creating input layer with " << initialInputs.size() << " nodes" << endl;
-    #endif*/
+    #endif
     
     layers.push_back(make_shared<Layer>(layerTypes::input, initialInputs.size(), nullptr, initialInputs, DEFAULTLEARNINGRATE));
 
-    /*#ifdef _DEBUG
-    cout << "Creating middle layers (with " << hiddenNodeLayerSize << " nodes in each).\nCreating middle layer:" << endl;
-    #endif*/
+    #ifdef _DEBUG
+    cout << "Creating " << middleLayerCount << " middle layers (with " << hiddenNodeLayerSize << " nodes in each).\nCreating middle layer:" << endl;
+    #endif
 
     size_t i;
     for (i = 1; i <= middleLayerCount; i++)
     {
-        /*#ifdef _DEBUG
+        #ifdef _DEBUG
         cout << i << endl;
-        #endif*/
+        #endif
         
         layers.push_back(make_shared<Layer>(layerTypes::middle, hiddenNodeLayerSize, layers.back(), vector<double>(), DEFAULTLEARNINGRATE));
     }
 
-    /*#ifdef _DEBUG
+    #ifdef _DEBUG
     cout << "Creating output layer with " << targetCount << " nodes" << endl;
-    #endif*/
+    #endif
 
     layers.push_back(make_shared<Layer>(layerTypes::nonInput, targetCount, layers.back(), vector<double>(), DEFAULTLEARNINGRATE));
     
-    /*#ifdef _DEBUG
+    #ifdef _DEBUG
     cout << "Creating backpointers..." << endl;
-    #endif*/
+    #endif
     //connect backpointers
     for(; i > 0; i--)
     {
