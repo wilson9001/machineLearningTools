@@ -71,7 +71,11 @@ void Layer::backPropogateError(vector<double>& targets)
 {
     for (size_t i = 0; i < nodes->size(); i++)
     {
-        nodes->at(i)->calculateError(targets.at(i));
+        /*#ifdef _DEBUG
+        cout << "target index " << i << " when size is " << targets.size() << endl;
+        #endif*/
+        double target = i < targets.size() ? targets.at(i) : targets.back();
+        nodes->at(i)->calculateError(target);
         nodes->at(i)->adjustWeights();
     }
 }
@@ -143,7 +147,7 @@ size_t Layer::getNodeCount()
 
 void Layer::setNodeOutputs(vector<shared_ptr<Node>> nodeOutputs)
 {
-    #ifdef _DEBUG
+    /*#ifdef _DEBUG
     if(nodeOutputs.empty())
     {
         cout << "WARNING: SETTING EMPTY VECTOR AS NODE OUTPUTS IN A LAYER" << endl;
@@ -152,7 +156,7 @@ void Layer::setNodeOutputs(vector<shared_ptr<Node>> nodeOutputs)
     {
         cout << "Setting " << nodeOutputs.size() << " nodes as outputs" << endl;
     }
-    #endif
+    #endif*/
 
     /*for(shared_ptr<Node>& node : *nodes)
     {

@@ -25,9 +25,9 @@ vector<shared_ptr<Node>> MiddleNode::getOutputs()
 
 void MiddleNode::setOutputs(vector<shared_ptr<Node>> outputs)
 {
-    #ifdef _DEBUG
+    /*#ifdef _DEBUG
     cout << "Inside setOutputs there are  " << outputs.size() << " outputs to be set" << endl;
-    #endif
+    #endif*/
 
     this->outputs = outputs;
 }
@@ -39,8 +39,10 @@ void MiddleNode::addOutput(shared_ptr<Node> output)
 
 void MiddleNode::calculateError(double target)
 {
-    //TODO: Check for NULL outputs before pulling values and throw error if true.
-    //TODO: Calculate error as sum(dot(error of one output node, every weight in current node))?
+    /*#ifdef _DEBUG
+    cout << "Calculating error for middle node with " << outputs.size() << " nodes" << endl;
+    #endif*/
+
     if(outputs.empty())
     {
         ThrowError("Attempted to calculate error in middle node with no output connections");
@@ -50,10 +52,27 @@ void MiddleNode::calculateError(double target)
 
     for(size_t i = 0; i < outputs.size(); i++)
     {
+        /*#ifdef _DEBUG
+        cout << "output " << i;
+        cout << " error " << outputs.at(i)->getError() << " old weight " << outputs.at(i)->getOldWeightForInput(uuid) << endl;
+        #endif*/
+
         errorSum += (outputs.at(i)->getError() * outputs.at(i)->getOldWeightForInput(uuid));
+    
+        /*#ifdef _DEBUG
+        cout << "Error sum calculated for " << i << endl;
+        #endif*/
     }
+
+    /*#ifdef _DEBUG
+    cout << "Completed loop" << endl;
+    #endif*/
 
     errorSum *= (output * (1-output));
 
     error = errorSum;
+
+    /*#ifdef _DEBUG
+    cout << "Final error is " << errorSum << endl;
+    #endif*/
 }

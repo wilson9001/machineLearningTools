@@ -45,9 +45,9 @@ class Node
     virtual void calculateOutput(){}
     virtual void setOutputs(vector<shared_ptr<Node>> outputs)
     {
-        #ifdef _DEBUG
+        /*#ifdef _DEBUG
         cout << "Inside setOutputs (base class) there are  " << outputs.size() << " outputs to be disregarded" << endl;
-        #endif
+        #endif*/
     }
     virtual void addOutput(shared_ptr<Node> output){}
     virtual double getMomentum(){return 0;}
