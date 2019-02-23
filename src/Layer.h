@@ -42,6 +42,7 @@ class Layer
     layerTypes getLayerType();
     void setBias(double newBias);
     size_t getNodeCount();
+    void setWeights(vector<vector<double>> newWeights);
 };
 
 #endif

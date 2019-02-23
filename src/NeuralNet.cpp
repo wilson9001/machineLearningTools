@@ -1,8 +1,6 @@
 #include "NeuralNet.h"
 #include "matrix.h"
-#ifdef _DEBUG
 #include <iostream>
-#endif
 
 NeuralNet::NeuralNet(Rand &r): SupervisedLearner(), m_rand(r)//, layerCount(DEFAULTLAYERCOUNT), layers(vector<shared_ptr<Layer>>())
 {
@@ -89,7 +87,8 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
     size_t totalEpochs = 0;
     size_t epochsSinceImprovement = 0;
     double currentEpochAccuracy = 0;
-    double previousEpochAccuracy = 0;
+    double bestEpochAccuracy = 0;
+    vector<vector<vector<double>>> bestWeightConfiguration;
     //double changeInAccuracy = 0;
 
     //trainingSetFeatures.shuffleRows(m_rand, &trainingSetLabels);
@@ -164,15 +163,30 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         cout << "Accuracy of epoch " << totalEpochs << ": " << currentEpochAccuracy << endl;
         #endif
 
-        currentEpochAccuracy > previousEpochAccuracy ? epochsSinceImprovement = 0 : ++epochsSinceImprovement;
-        //changeInAccuracy = currentEpochAccuracy - previousEpochAccuracy;
+        if(currentEpochAccuracy > bestEpochAccuracy)
+        {
+            epochsSinceImprovement = 0;
+
+            //save current best configuration
+            bestWeightConfiguration = getAllWeights();
+        }
+        else
+        {
+            ++epochsSinceImprovement;
+        }
+        
+        //changeInAccuracy = currentEpochAccuracy - bestEpochAccuracy;
 
         //changeInAccuracy < EPOCHCHANGETHRESHOLD ? ++epochsSinceImprovement : epochsSinceImprovement = 0;
         
         totalEpochs++;
-        previousEpochAccuracy = currentEpochAccuracy;
+        bestEpochAccuracy = currentEpochAccuracy;
 
-    } while (epochsSinceImprovement < EPOCHWITHNOIMPROVEMENTLIMIT /*|| currentEpochAccuracy <= .8*/);
+    } while (epochsSinceImprovement < EPOCHWITHNOIMPROVEMENTLIMIT || currentEpochAccuracy <= .8);
+
+    setAllWeights(bestWeightConfiguration);
+
+    cout << "Final VS accuracy:" << bestEpochAccuracy << endl;
 
     #ifdef _DEBUG
     cout << "Total training epochs: " << totalEpochs << endl;
@@ -268,4 +282,29 @@ void NeuralNet::createNeuralNetwork(vector<double> initialInputs, size_t targetC
     /*#ifdef _DEBUG
     cout << "Finished creating layers..." << endl;
     #endif*/
+}
+
+vector<vector<vector<double>>> NeuralNet::getAllWeights()
+{
+    vector<vector<vector<double>>> weights;
+
+    for(shared_ptr<Layer>& layer : layers)
+    {
+        weights.push_back(layer->getWeights());
+    }
+
+    return weights;
+}
+
+void NeuralNet::setAllWeights(vector<vector<vector<double>>> allWeights)
+{
+    if(allWeights.size() != layers.size())
+    {
+        ThrowError("Set all weights: number of layers passed in != number of layers in network");
+    }
+
+    for(size_t i = 0; i < layers.size(); i++)
+    {
+        layers.at(i)->setWeights(allWeights.at(i));
+    }
 }

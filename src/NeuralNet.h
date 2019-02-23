@@ -14,7 +14,7 @@ class NeuralNet: public SupervisedLearner
     const size_t EPOCHWITHNOIMPROVEMENTLIMIT = 5;
     //const double EPOCHCHANGETHRESHOLD = .01;
     const size_t DEFAULTOUTPUTNODECOUNT = 3;
-    const double VALIDATIONSETPERCENTAGE = .1;
+    const double VALIDATIONSETPERCENTAGE = .25;
 
     protected:
     void createNeuralNetwork(vector<double> initialInputs, size_t targetCount);
@@ -32,6 +32,9 @@ class NeuralNet: public SupervisedLearner
     
     // Evaluate the features and predict the labels
     void predict(const vector<double> &features, vector<double> &labels);
+
+    vector<vector<vector<double>>> getAllWeights();
+    void setAllWeights(vector<vector<vector<double>>> allWeights);
 };
 
 #endif

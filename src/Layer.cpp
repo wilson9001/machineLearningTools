@@ -179,3 +179,16 @@ void Layer::setNodeOutputs(vector<shared_ptr<Node>> nodeOutputs)
         nodes->at(i)->setOutputs(nodeOutputs);
     }
 }
+
+void Layer::setWeights(vector<vector<double>> newWeights)
+{
+    if(newWeights.size() != nodes->size())
+    {
+        ThrowError("Set weights: number of nodes passed in != number of nodes in layer");
+    }
+
+    for(size_t i = 0; i < nodes->size(); i++)
+    {
+        nodes->at(i)->setWeights(newWeights.at(i));
+    }
+}

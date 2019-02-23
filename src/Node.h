@@ -41,6 +41,7 @@ class Node
         #endif
     }
     virtual vector<double> getWeights(){return vector<double>();}
+    virtual void setWeights(vector<double> newWeights){}
     virtual double getError(){return 0;}
     virtual vector<shared_ptr<Node>> getInputs(){return vector<shared_ptr<Node>>();}
     virtual size_t getInputSize(){return 0;}

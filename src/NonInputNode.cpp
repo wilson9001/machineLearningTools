@@ -124,7 +124,7 @@ void NonInputNode::calculateOutput()
 
     if(inputs.empty())
     {
-        ThrowError("Attempted to calculate node output with no inputs");
+        ThrowError("Calculate output: attempted to calculate node output with no inputs");
     }
 
     #ifdef _DEBUG
@@ -178,4 +178,17 @@ vector<shared_ptr<Node>> NonInputNode::getInputs()
 void NonInputNode::useMomentum(double momentum)
 {
     this->momentum = momentum;
+}
+
+void NonInputNode::setWeights(vector<double> newWeights)
+{
+    if(newWeights.size() != weights.size())
+    {
+        ThrowError("Set weights: new weight count and weight count don't match");
+    }
+
+    for(size_t i = 0; i < weights.size(); i++)
+    {
+        weights.at(i) = newWeights.at(i);
+    }
 }

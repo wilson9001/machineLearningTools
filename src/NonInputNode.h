@@ -22,8 +22,8 @@ class NonInputNode: public Node
     const double DEFAULTLEARNINGRATE = .1;
     const double DEFAULTERROR = 0;
     const double DEFAULTMOMENTUM = 0;
-    const double WEIGHTINITLOWERBOUND = -.5;
-    const double WEIGHTINITUPPERBOUND = .5;
+    const double WEIGHTINITLOWERBOUND = -.8;
+    const double WEIGHTINITUPPERBOUND = .8;
 
     void createWeights();
     
@@ -44,6 +44,7 @@ class NonInputNode: public Node
     void adjustWeights();
     void calculateOutput();
     double getMomentum();
+    void setWeights(vector<double> newWeights);
     /*virtual void setOutputs(vector<shared_ptr<Node>> outputs)
     {
         #ifdef _DEBUG
