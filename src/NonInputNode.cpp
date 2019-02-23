@@ -101,7 +101,7 @@ void NonInputNode::calculateError(double target)
     error = (target - output) * output * (1 - output);
 
     #ifdef _DEBUG
-    cout << "\nTarget, output, error for output node is " << target << ", " << output << ", " << error << endl << endl;
+    //cout << "Target, output, error for output node is " << target << ", " << output << ", " << error << endl;
     #endif
 }
 
@@ -128,7 +128,7 @@ void NonInputNode::calculateOutput()
     }
 
     #ifdef _DEBUG
-    cout << "Calculating output of node. Inputs, weights are: ";
+    //cout << "Calculating output of node. Inputs, weights are: ";
     #endif
 
     /*for(shared_ptr<Node>& input : inputs)
@@ -143,12 +143,12 @@ void NonInputNode::calculateOutput()
     {
         net += (inputs.at(i)->getOutput() * weights.at(i));
         #ifdef _DEBUG
-        cout << "{" << inputs.at(i)->getOutput() << ", " << weights.at(i) << "} ";
+        //cout << "{" << inputs.at(i)->getOutput() << ", " << weights.at(i) << "} ";
         #endif
     }
 
     #ifdef _DEBUG
-    cout << " final net: " << net << endl;
+    //cout << " final net: " << net << endl;
     #endif
 
     net *= -1;
@@ -156,7 +156,7 @@ void NonInputNode::calculateOutput()
     output = 1/(1+exp(net));
 
     #ifdef _DEBUG
-    cout << "output: " << output << endl;
+    //cout << "output: " << output << endl;
     #endif
 }
 

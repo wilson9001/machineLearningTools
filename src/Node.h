@@ -50,7 +50,7 @@ class Node
     virtual void calculateOutput()
     {
         #ifdef _DEBUG
-        cout << "Calculate output called in Node class. Doing nothing.\n";
+        //cout << "Calculate output called in Node class. Doing nothing.\n";
         #endif
     }
     virtual void setOutputs(vector<shared_ptr<Node>> outputs)

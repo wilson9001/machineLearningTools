@@ -26,7 +26,7 @@ Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousL
 
             if(nodeCount != initialOutputs.size())
             {
-                    ThrowError("Number of initial outputs provided != number of output nodes requested");
+                ThrowError("Number of initial outputs provided != number of output nodes requested");
             }
 
             nodes->reserve(nodeCount);
@@ -71,9 +71,9 @@ void Layer::backPropogateError(vector<double>& targets)
 {
     for (size_t i = 0; i < nodes->size(); i++)
     {
-        /*#ifdef _DEBUG
-        cout << "target index " << i << " when size is " << targets.size() << endl;
-        #endif*/
+        #ifdef _DEBUG
+        //cout << "\nCalculating error for node " << i << endl;
+        #endif
         double target = i < targets.size() ? targets.at(i) : targets.back();
         nodes->at(i)->calculateError(target);
         nodes->at(i)->adjustWeights();
@@ -117,19 +117,19 @@ void Layer::setOutputs(vector<double>& outputs)
     }
 
     #ifdef _DEBUG
-    cout << "\n--------------------------------\nSetting outputs in layer\n";
+    //cout << "\n--------------------------------\nSetting outputs in layer\n";
     #endif
 
     for(size_t i = 0; i < outputs.size(); i++)
     {
         #ifdef _DEBUG
-        cout << "old output: " << nodes->at(i)->getOutput() << " potential new output: " << outputs.at(i);
+        //cout << "old output: " << nodes->at(i)->getOutput() << " potential new output: " << outputs.at(i);
         #endif
 
         nodes->at(i)->setOutput(outputs.at(i));
 
         #ifdef _DEBUG
-        cout << " actual new output: " << nodes->at(i)->getOutput() << endl;
+        //cout << " actual new output: " << nodes->at(i)->getOutput() << endl;
         #endif
     }
 }
