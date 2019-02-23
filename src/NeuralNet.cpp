@@ -32,7 +32,7 @@ NeuralNet::~NeuralNet()
 
 void NeuralNet::train(Matrix &features, Matrix &labels)
 {
-    /*Matrix validationSetFeatures(features);// = Matrix();
+    Matrix validationSetFeatures(features);// = Matrix();
     Matrix validationSetLabels(labels);// = Matrix();
 
     Matrix trainingSetFeatures(features);// = Matrix();
@@ -71,7 +71,7 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         trainingSetFeatures.copyRow(features.row(i));
         trainingSetLabels.copyRow(labels.row(i));
     }
-*/
+
     //first epoch network must be created
     if(layers.empty())
     {
@@ -79,8 +79,8 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         //cout << "creating neural net" << endl;
         #endif
 
-        //createNeuralNetwork(trainingSetFeatures.row(0), DEFAULTOUTPUTNODECOUNT);
-        createNeuralNetwork(features.row(0), DEFAULTOUTPUTNODECOUNT);
+        createNeuralNetwork(trainingSetFeatures.row(0), DEFAULTOUTPUTNODECOUNT);
+        //createNeuralNetwork(features.row(0), DEFAULTOUTPUTNODECOUNT);
     }
 
     #ifdef _DEBUG
@@ -90,22 +90,22 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
     size_t epochsSinceImprovement = 0;
     double currentEpochAccuracy = 0;
     double previousEpochAccuracy = 0;
-    double changeInAccuracy = 0;
+    //double changeInAccuracy = 0;
 
     //trainingSetFeatures.shuffleRows(m_rand, &trainingSetLabels);
 
     //run training epochs
     do
     {
-        //trainingSetFeatures.shuffleRows(m_rand, &trainingSetLabels);
-        features.shuffleRows(m_rand, &labels);
+        trainingSetFeatures.shuffleRows(m_rand, &trainingSetLabels);
+        //features.shuffleRows(m_rand, &labels);
 
         //run 1 epoch of training
-        //for(size_t i = 0; i < trainingSetFeatures.rows(); i++)
-        for(size_t i = 0; i < features.rows(); i++)
+        for(size_t i = 0; i < trainingSetFeatures.rows(); i++)
+        //for(size_t i = 0; i < features.rows(); i++)
         {
-            //layers.at(0)->setOutputs(trainingSetFeatures.row(i));
-            layers.at(0)->setOutputs(features.row(i));
+            layers.at(0)->setOutputs(trainingSetFeatures.row(i));
+            //layers.at(0)->setOutputs(features.row(i));
 
             #ifdef _DEBUG
             /*cout << "training on row " << i << ": ";
@@ -142,10 +142,10 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
 
             vector<double> nominalizedResults = vector<double>(DEFAULTOUTPUTNODECOUNT, 0);
                 
-            //size_t indexToChange = static_cast<size_t>(trainingSetLabels.row(i).at(0));
-            size_t indexToChange = static_cast<size_t>(labels.row(i).at(0));
+            size_t indexToChange = static_cast<size_t>(trainingSetLabels.row(i).at(0));
+            //size_t indexToChange = static_cast<size_t>(labels.row(i).at(0));
             nominalizedResults.at(indexToChange) = 1;
-            
+
             #ifdef _DEBUG
             cout << ", target: " << indexToChange << endl;
             #endif
@@ -157,17 +157,17 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
             }
         }
 
-        //currentEpochAccuracy = measureAccuracy(validationSetFeatures, validationSetLabels);
-        currentEpochAccuracy = measureAccuracy(features, labels);
+        currentEpochAccuracy = measureAccuracy(validationSetFeatures, validationSetLabels);
+        //currentEpochAccuracy = measureAccuracy(features, labels);
 
         #ifdef _DEBUG
         cout << "Accuracy of epoch " << totalEpochs << ": " << currentEpochAccuracy << endl;
         #endif
 
-        //currentEpochAccuracy > previousEpochAccuracy ? epochsSinceImprovement = 0 : ++epochsSinceImprovement;
-        changeInAccuracy = currentEpochAccuracy - previousEpochAccuracy;
+        currentEpochAccuracy > previousEpochAccuracy ? epochsSinceImprovement = 0 : ++epochsSinceImprovement;
+        //changeInAccuracy = currentEpochAccuracy - previousEpochAccuracy;
 
-        changeInAccuracy < EPOCHCHANGETHRESHOLD ? ++epochsSinceImprovement : epochsSinceImprovement = 0;
+        //changeInAccuracy < EPOCHCHANGETHRESHOLD ? ++epochsSinceImprovement : epochsSinceImprovement = 0;
         
         totalEpochs++;
         previousEpochAccuracy = currentEpochAccuracy;
