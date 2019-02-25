@@ -10,10 +10,10 @@ class NeuralNet: public SupervisedLearner
     vector<shared_ptr<Layer>> layers;
     const size_t DEFAULTMIDDLELAYERCOUNT = 1;
     size_t middleLayerCount;
-    const double DEFAULTLEARNINGRATE = .1;
-    const size_t EPOCHWITHNOIMPROVEMENTLIMIT = 5;
+    const double DEFAULTLEARNINGRATE = .5;
+    const size_t EPOCHWITHNOIMPROVEMENTLIMIT = 24;
     //const double EPOCHCHANGETHRESHOLD = .01;
-    const size_t DEFAULTOUTPUTNODECOUNT = 3;
+    const size_t DEFAULTOUTPUTNODECOUNT = 11;
     const double VALIDATIONSETPERCENTAGE = .25;
 
     protected:

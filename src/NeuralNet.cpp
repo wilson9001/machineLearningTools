@@ -10,7 +10,23 @@ NeuralNet::NeuralNet(Rand &r): SupervisedLearner(), m_rand(r)//, layerCount(DEFA
 
     m_rand = r;
 
-    middleLayerCount = DEFAULTMIDDLELAYERCOUNT;
+    char* hiddenLayersEnv = getenv("hiddenLayers");
+
+    if(hiddenLayersEnv)
+    {
+        string hiddenLayersEnvString = hiddenLayersEnv;
+        middleLayerCount = static_cast<size_t>(stol(hiddenLayersEnvString));
+    }
+    else
+    {
+       middleLayerCount = DEFAULTMIDDLELAYERCOUNT;
+    }
+
+    ofstream logFile("accuracyResults.csv", ios_base::app);
+
+    logFile << middleLayerCount << ",";
+
+    logFile.close();
 
     //Add +1 for layer that interacts with inputs before first middle layer.
     middleLayerCount++;
@@ -30,11 +46,15 @@ NeuralNet::~NeuralNet()
 
 void NeuralNet::train(Matrix &features, Matrix &labels)
 {
-    Matrix validationSetFeatures(features);// = Matrix();
-    Matrix validationSetLabels(labels);// = Matrix();
+    Matrix validationSetFeatures(features);
+    Matrix validationSetLabels(labels);
+    Matrix validationSetLabelsContinuous(labels);
 
-    Matrix trainingSetFeatures(features);// = Matrix();
-    Matrix trainingSetLabels(labels); // = Matrix();
+    Matrix trainingSetFeatures(features);
+    Matrix trainingSetLabels(labels);
+    
+    Matrix trainingSetFeaturesUnmixed(features);
+    Matrix trainingSetLabelsContinuous(labels);
 
     //create validation set
     size_t validationSetSize = static_cast<size_t>(features.rows() * VALIDATIONSETPERCENTAGE);
@@ -58,6 +78,7 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         //cout << "creating validation label" << endl;
         #endif
         validationSetLabels.copyRow(labels.row(i));
+        validationSetLabelsContinuous.copyRow(labels.row(i));
     }
 
     #ifdef _DEBUG
@@ -67,8 +88,13 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
     for(; i < features.rows(); i++)
     {
         trainingSetFeatures.copyRow(features.row(i));
+        trainingSetFeaturesUnmixed.copyRow(features.row(i));
         trainingSetLabels.copyRow(labels.row(i));
+        trainingSetLabelsContinuous.copyRow(labels.row(i));
     }
+
+    validationSetLabelsContinuous.makeNominalAttrContinuous(0);
+    trainingSetLabelsContinuous.makeNominalAttrContinuous(0);
 
     //first epoch network must be created
     if(layers.empty())
@@ -87,8 +113,10 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
     size_t totalEpochs = 0;
     size_t epochsSinceImprovement = 0;
     double currentEpochAccuracy = 0;
+    double currentEpochMeanSquaredError = 1;
     double bestEpochAccuracy = 0;
-    vector<vector<vector<double>>> bestWeightConfiguration;
+    double bestEpochMeanSquaredError = 100;
+    vector<vector<vector<double>>> bestWeightConfiguration(getAllWeights());
     //double changeInAccuracy = 0;
 
     //trainingSetFeatures.shuffleRows(m_rand, &trainingSetLabels);
@@ -122,7 +150,7 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
             }
 
             #ifdef _DEBUG
-            vector<double> results = layers.back()->getOutputs();
+            /*vector<double> results = layers.back()->getOutputs();
        
             size_t categoryForAnswer = 0;
             double greatestCertainty = 0;
@@ -136,17 +164,17 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
                 }
             }
 
-            cout << "Output: " << categoryForAnswer;
+            cout << "Output: " << categoryForAnswer;*/
             #endif
 
             vector<double> nominalizedResults = vector<double>(DEFAULTOUTPUTNODECOUNT, 0);
-                
+
             size_t indexToChange = static_cast<size_t>(trainingSetLabels.row(i).at(0));
             //size_t indexToChange = static_cast<size_t>(labels.row(i).at(0));
             nominalizedResults.at(indexToChange) = 1;
 
             #ifdef _DEBUG
-            cout << ", target: " << indexToChange << endl;
+            //cout << ", target: " << indexToChange << endl;
             #endif
 
             //propogate error back through network
@@ -156,17 +184,33 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
             }
         }
 
-        currentEpochAccuracy = measureAccuracy(validationSetFeatures, validationSetLabels);
+        //cout << "\nNumber of features associated with labels: " << validationSetLabels.valueCount(0) << endl;
+
+        currentEpochAccuracy = measureAccuracy(validationSetFeatures, validationSetLabels); //uses 3, so is nominal. Change to continuous?
+
+
+
+        currentEpochMeanSquaredError = pow(measureAccuracy(validationSetFeatures, validationSetLabelsContinuous), 2);
+        //currentEpochMeanSquaredError = measureAccuracy(trainingSetFeaturesUnmixed, trainingSetLabelsContinuous);
+
+
+
         //currentEpochAccuracy = measureAccuracy(features, labels);
 
         #ifdef _DEBUG
-        cout << "Accuracy of epoch " << totalEpochs << ": " << currentEpochAccuracy << endl;
+        double currentTrainingSetMSE = measureAccuracy(trainingSetFeaturesUnmixed, trainingSetLabelsContinuous);
+        cout << "Current best VS accuracy:" << bestEpochAccuracy << " Current best VS MSE: " << bestEpochMeanSquaredError << " Current best training set MSE: " << currentTrainingSetMSE << endl;
         #endif
 
-        if(currentEpochAccuracy > bestEpochAccuracy)
+        if(currentEpochMeanSquaredError < bestEpochMeanSquaredError)
         {
+            #ifdef _DEBUG
+            cout << "improvement made\n";
+            #endif
             epochsSinceImprovement = 0;
-
+            bestEpochAccuracy = currentEpochAccuracy;
+            bestEpochMeanSquaredError = currentEpochMeanSquaredError;
+            
             //save current best configuration
             bestWeightConfiguration = getAllWeights();
         }
@@ -180,17 +224,22 @@ void NeuralNet::train(Matrix &features, Matrix &labels)
         //changeInAccuracy < EPOCHCHANGETHRESHOLD ? ++epochsSinceImprovement : epochsSinceImprovement = 0;
         
         totalEpochs++;
-        bestEpochAccuracy = currentEpochAccuracy;
 
-    } while (epochsSinceImprovement < EPOCHWITHNOIMPROVEMENTLIMIT || currentEpochAccuracy <= .8);
+    } while (epochsSinceImprovement < EPOCHWITHNOIMPROVEMENTLIMIT /*|| bestEpochAccuracy <= .8*/);
 
     setAllWeights(bestWeightConfiguration);
 
-    cout << "Final VS accuracy:" << bestEpochAccuracy << endl;
+    double finalTrainingSetMSE = measureAccuracy(trainingSetFeaturesUnmixed, trainingSetLabelsContinuous);
 
-    #ifdef _DEBUG
+    cout << "Final VS accuracy:" << bestEpochAccuracy << endl << "Final VS MSE: " << bestEpochMeanSquaredError << endl << "Final training set MSE: " << finalTrainingSetMSE << endl;
+
+    ofstream logFile("accuracyResults.csv", ios_base::app);
+
+    logFile /*<< DEFAULTLEARNINGRATE << "," <<  EPOCHWITHNOIMPROVEMENTLIMIT << ","*/ << finalTrainingSetMSE << ","  << bestEpochMeanSquaredError << ",";
+
+    logFile.close();
+
     cout << "Total training epochs: " << totalEpochs << endl;
-    #endif
 }
 
 void NeuralNet::predict(const vector<double> &features, vector<double> &labels)
@@ -200,6 +249,7 @@ void NeuralNet::predict(const vector<double> &features, vector<double> &labels)
     #endif*/
 
     vector<double> featuresCopy(features);
+    vector<double> labelsCopyContinuous(labels);
 
     layers.at(0)->setOutputs(featuresCopy);
 
@@ -230,6 +280,7 @@ void NeuralNet::predict(const vector<double> &features, vector<double> &labels)
 
     labels.at(0) = categoryForAnswer;
 
+
     /*#ifdef _DEBUG
     cout << "End prediction" << endl;
     #endif*/
@@ -241,17 +292,36 @@ void NeuralNet::createNeuralNetwork(vector<double> initialInputs, size_t targetC
     cout << "Creating layers..." << endl;
     #endif*/
 
-    size_t hiddenNodeLayerSize = 2 * initialInputs.size();
+    size_t hiddenNodeLayerSize;
+    
+    char* hiddenNodesEnv = getenv("hiddenLayerSize");
+
+    if(hiddenNodesEnv)
+    {
+        string hiddenNodesEnvString = hiddenNodesEnv;
+        hiddenNodeLayerSize = static_cast<size_t>(stol(hiddenNodesEnvString));
+    }
+    else
+    {
+        hiddenNodeLayerSize = 2 * initialInputs.size();
+    }
+
+    /*ofstream logFile("accuracyResults.csv", ios_base::app);
+
+    logFile << hiddenNodeLayerSize << ",";
+
+    logFile.close();*/
+
     layers.clear();
 
     #ifdef _DEBUG
-    //cout << "Creating input layer with " << initialInputs.size() << " nodes" << endl;
+    cout << "Creating input layer with " << initialInputs.size() << " nodes" << endl;
     #endif
     
     layers.push_back(make_shared<Layer>(layerTypes::input, initialInputs.size(), nullptr, initialInputs, DEFAULTLEARNINGRATE));
 
     #ifdef _DEBUG
-    //cout << "Creating " << middleLayerCount << " middle layers (with " << hiddenNodeLayerSize << " nodes in each).\nCreating middle layer:" << endl;
+    cout << "Creating " << middleLayerCount << " middle layers (with " << hiddenNodeLayerSize << " nodes in each).\nCreating middle layer:" << endl;
     #endif
 
     size_t i;
@@ -261,11 +331,18 @@ void NeuralNet::createNeuralNetwork(vector<double> initialInputs, size_t targetC
         //cout << i << endl;
         #endif
         
-        layers.push_back(make_shared<Layer>(layerTypes::middle, hiddenNodeLayerSize, layers.back(), vector<double>(), DEFAULTLEARNINGRATE));
+        if(i > 1)
+        {
+            layers.push_back(make_shared<Layer>(layerTypes::middle, hiddenNodeLayerSize, layers.back(), vector<double>(), DEFAULTLEARNINGRATE));
+        }
+        else
+        {
+            layers.push_back(make_shared<Layer>(layerTypes::middle, initialInputs.size(), layers.back(), vector<double>(), DEFAULTLEARNINGRATE));
+        }
     }
 
     #ifdef _DEBUG
-    //cout << "Creating output layer with " << targetCount << " nodes" << endl;
+    cout << "Creating output layer with " << targetCount << " nodes" << endl;
     #endif
 
     layers.push_back(make_shared<Layer>(layerTypes::nonInput, targetCount, layers.back(), vector<double>(), DEFAULTLEARNINGRATE));
@@ -300,7 +377,8 @@ void NeuralNet::setAllWeights(vector<vector<vector<double>>> allWeights)
 {
     if(allWeights.size() != layers.size())
     {
-        ThrowError("Set all weights: number of layers passed in != number of layers in network");
+        //cerr << "Set all weights: number of layers passed in, number of layers in network: " << allWeights.size() << " " << layers.size();
+        ThrowError("Set all weights: number of layers passed in, number of layers in network:", to_str(allWeights.size()), ", ", to_str(layers.size()));
     }
 
     for(size_t i = 0; i < layers.size(); i++)

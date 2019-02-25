@@ -10,17 +10,19 @@
 #include <algorithm>
 
 using std::vector;
-using std::auto_ptr;
-
+//using std::auto_ptr;
+using std::unique_ptr;
 
 // virtual
 void Filter::train(Matrix& features, Matrix& labels)
 {
 	trainFilter(features, labels);
 	Matrix* pTrainFeatures = filterFeatures(features);
-	auto_ptr<Matrix> apTrainFeatures(pTrainFeatures);
+	//auto_ptr<Matrix> apTrainFeatures(pTrainFeatures);
+	unique_ptr<Matrix> apTrainFeatures(pTrainFeatures);
 	Matrix* pTrainLabels = filterLabels(labels);
-	auto_ptr<Matrix> apTrainLabels(pTrainLabels);
+	//auto_ptr<Matrix> apTrainLabels(pTrainLabels);
+	unique_ptr<Matrix> apTrainLabels(pTrainLabels);
 	m_pInnerModel->train(*pTrainFeatures, *pTrainLabels);
 }
 

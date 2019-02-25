@@ -10,6 +10,22 @@ Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousL
     nodes->reserve(nodeCount);
     vector<shared_ptr<Node>> inputs;
 
+    double momentum;
+
+    char* momentumEnv = getenv("momentum");
+
+    if(momentumEnv)
+    {
+        string momentumEnvString = momentumEnv;
+        momentum = stod(momentumEnvString);
+    }
+    else
+    {
+        momentum = DEFAULTMOMENTUM;
+    }
+
+    //ofstream logFile;
+
     //create nodes
     switch (layerType){
         case layerTypes::middle:
@@ -17,12 +33,18 @@ Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousL
             inputs.push_back(bias);
             for(size_t i = 0; i < nodeCount; i++)
             {
-                nodes->push_back(make_shared<MiddleNode>(inputs, learningRate, DEFAULTMOMENTUM));
+                nodes->push_back(make_shared<MiddleNode>(inputs, learningRate, momentum));
             }
 
             break;
 
         case layerTypes::input:
+
+            /*logFile.open("accuracyResults.csv", ios_base::app);
+
+            logFile << momentum << ",";
+
+            logFile.close();*/
 
             if(nodeCount != initialOutputs.size())
             {
@@ -45,7 +67,7 @@ Layer::Layer(layerTypes layerType, size_t nodeCount, shared_ptr<Layer> previousL
 
             for (size_t i = 0; i < nodeCount; i++)
             {
-                nodes->push_back(make_shared<NonInputNode>(inputs, learningRate, DEFAULTMOMENTUM));
+                nodes->push_back(make_shared<NonInputNode>(inputs, learningRate, momentum));
             }
     }
 }

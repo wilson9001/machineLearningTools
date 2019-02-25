@@ -87,6 +87,9 @@ public:
 	// 0=continuous, 2=binary, 3=trinary, etc.
 	size_t valueCount(size_t attr) { return m_enum_to_str[attr].size(); }
 
+	//Sets the saved possible options for a specified attribute (or column) to 0, effectively casting a nominal target to a contiuous one.
+	void makeNominalAttrContinuous(size_t attr) { m_enum_to_str[attr].clear(); }
+
 	// Returns the mean of the elements in the specified column. (Elements with the value UNKNOWN_VALUE are ignored.)
 	double columnMean(size_t col);
 
