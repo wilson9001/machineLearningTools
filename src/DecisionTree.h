@@ -17,6 +17,8 @@ class DecisionTree : public SupervisedLearner
     Rand &m_rand;
     const size_t PRINTTREEMARGIN = 0;
     public:
+    const int UNKNOWNCATEGORYVALUE = -1;
+
     DecisionTree(Rand &r);
     ~DecisionTree();
 
