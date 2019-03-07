@@ -1,7 +1,7 @@
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
 
-#include "DCNode.h"
+#include "DTNode.h"
 #include "learner.h"
 #include "error.h"
 #include <memory>
@@ -13,9 +13,9 @@
 class DecisionTree : public SupervisedLearner
 {
     private:
-    unique_ptr<DCNode> root;
+    unique_ptr<DTNode> root;
     Rand &m_rand;
-    const size_t INITIALSPACES = 0;
+    const size_t PRINTTREEMARGIN = 0;
     public:
     DecisionTree(Rand &r);
     ~DecisionTree();

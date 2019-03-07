@@ -4,12 +4,7 @@ DecisionTree::DecisionTree(Rand &r): SupervisedLearner(), m_rand(r), root(nullpt
 {}
 
 DecisionTree::~DecisionTree()
-{
-    if(root != nullptr)
-    {
-        root.reset();
-    }
-}
+{}
 
 size_t DecisionTree::getNodeCount()
 {
@@ -27,29 +22,32 @@ size_t DecisionTree::getTreeDepth()
 
 void DecisionTree::createTree(vector<tuple<vector<int>, int>> dataAndLabel)
 {
+    if(dataAndLabel.empty())
+    {
+        ThrowError("Attempted to create decision tree on empty data set");
+    }
+
     //call root's createTree function to begin recursively creating tree
-    root = make_unique<DCNode>(dataAndLabel);
+    root = make_unique<DTNode>(dataAndLabel);
 }
 
 int DecisionTree::classifyData(vector<int> data)
 {
     //call root's recursive labelData function to begin resursive sort of data into tree
-    if(root != nullptr)
+    if(root)
     {
         return root->labelData(data);
     }
-    
     else
     {
         ThrowError("Attempted to classify data with uninitialized tree");
     }
-    
 }
 
 void DecisionTree::printAttributeSplits()
 {
     //call root's printAttributeSplits function with a value of 0 to start with no spaces
-    root->printAttributeSplits(INITIALSPACES);
+    root->printAttributeSplits(PRINTTREEMARGIN);
 }
 
 void DecisionTree::pruneTree(size_t depthLimit)

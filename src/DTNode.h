@@ -1,5 +1,5 @@
-#ifndef DCNODE_H
-#define DCNODE_H
+#ifndef DTNODE_H
+#define DTNODE_H
 
 #include <vector>
 #include <memory>
@@ -10,26 +10,28 @@
 
 using namespace std;
 
-class DCNode
+class DTNode
 {
     private:
-    vector<unique_ptr<DCNode>> childNodes;
+    map<int, unique_ptr<DTNode>> childNodes;
     size_t indexToSplitOn;
     bool stoppingCriteriaMet(vector<tuple<vector<int>, int>> dataAndLabels);
 
     protected:
     int mostCommonLabel;
+
     //if wholeSet is true then the node's most common label value will be set.
     double measureEntropyAndSetCommonLabel(vector<tuple<vector<int>, int>>& dataAndLabels, bool wholeSet);
-
+    //pass in an index < 0 to partition by label.
+    map<int, vector<tuple<vector<int>, int>>> partitionData(vector<tuple<vector<int>, int>> dataAndLabels, int index);
+    
     public:
     const int PRUNEALLCHILDNODES = -1;
     
-    DCNode();
-    DCNode(vector<tuple<vector<int>, int>> dataAndLabels);
-    ~DCNode();
+    DTNode(vector<tuple<vector<int>, int>> dataAndLabels);
+    ~DTNode();
 
-    vector<unique_ptr<DCNode>>& getChildNodes();
+    map<int, unique_ptr<DTNode>>& getChildNodes();
     
     virtual int labelData(vector<int> data);
     virtual void printAttributeSplits(size_t depth);
