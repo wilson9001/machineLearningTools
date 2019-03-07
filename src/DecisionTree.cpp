@@ -24,6 +24,10 @@ size_t DecisionTree::getTreeDepth()
 
 void DecisionTree::createTree(vector<tuple<vector<int>, int>> dataAndLabel)
 {
+    #ifdef _DEBUG
+    cout << "Inside createTree...\n";
+    #endif
+
     if(dataAndLabel.empty())
     {
         ThrowError("Attempted to create decision tree on empty data set");
@@ -62,6 +66,9 @@ void DecisionTree::pruneTree(size_t depthLimit)
 
 void DecisionTree::train(Matrix &features, Matrix &labels)
 {
+    #ifdef _DEBUG
+    cout << "Beginning training...\n";
+    #endif
     //conditionally create validation set
 
     //pack features and labels into a vector of tuples to simplify data handling in the tree
@@ -69,6 +76,10 @@ void DecisionTree::train(Matrix &features, Matrix &labels)
 
     vector<int> castFeatureRow = vector<int>();
     int label;
+
+    #ifdef _DEBUG
+    cout << "Packing data and labels into tuples...\n";
+    #endif
 
     for(size_t i = 0; i < features.rows(); i++)
     {

@@ -2,28 +2,43 @@
 
 DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
 {
+    #ifdef _DEBUG
+    cout << "Inside DTNode constructor... measuring entropy\n";
+    #endif
+
     //measure entropy for whole set and set most common label for node in the process
     double wholeEntropy = measureEntropyAndSetCommonLabel(dataAndLabels, true);
     
     //check if stopping criteria met. If so then stop partitioning and just set most common label, initialize childNodes to nothing and set split index to -1.
+    //for now we will use complete purity of subset to determine when to stop
     if(!wholeEntropy)
     {
-        //for now we will use complete purity of subset to determine when to stop
+        #ifdef _DEBUG
+        cout << "Data set is pure. This is a leaf node\n";
+        #endif
+
         childNodes = map<int, unique_ptr<DTNode>>();
         //the chances of this many features being in use is small enough that this is basically to trigger exceptions if trying to go deeper in tree with no children and this wasn't caught. Better than garbage data in my opinion...
         indexToSplitOn = -1;
         return;
     }
 
+    #ifdef _DEBUG
+    cout << "Entropy of whole set is " << wholeEntropy << endl;
+    #endif
+
     double gain;
     int currentBestIndexForGain;
     double currentBestGain = 0;
 
-    
     //partition dataAndLabels into all possible subsets based on a trait
     vector<map<int, vector<tuple<vector<int>, int>>>> partitionedDataSets = vector<map<int, vector<tuple<vector<int>, int>>>>();
 
     int featureCount = get<0>(dataAndLabels.at(0)).size();
+
+    #ifdef _DEBUG
+    cout << "Creating all possible data subsets based on one trait...\n";
+    #endif
 
     for(int featureIndex = 0; featureIndex < featureCount; featureIndex++)
     {
@@ -33,6 +48,10 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     //measure the entropy of each new group of subsets
 
     int featureIndex = 0;
+
+    #ifdef _DEBUG
+    cout << "Calculating possible gains...\n";
+    #endif
 
     for(map<int, vector<tuple<vector<int>, int>>>& partitionedDataSet : partitionedDataSets)
     {
@@ -44,6 +63,10 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
             gain -= measureEntropyAndSetCommonLabel(dataSet->second, false);
         }
 
+        #ifdef _DEBUG
+        cout << gain << endl;
+        #endif
+
         //track greatest gain and index that had it.
         if(gain > currentBestGain)
         {
@@ -54,11 +77,19 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
         featureIndex++;
     }
 
+    #ifdef _DEBUG
+    cout << "Best gain: " << currentBestGain << " at feature index " << currentBestIndexForGain << endl;
+    #endif
+
     //keep best partition of data
     map<int, vector<tuple<vector<int>, int>>> bestPartition = partitionedDataSets.at(currentBestIndexForGain);
 
     //discard inferior partitions
     partitionedDataSets.clear();
+
+    #ifdef _DEBUG
+    cout << "Removing feature from data sets...\n";
+    #endif
 
     //remove feature to split on from data set
     for(map<int, vector<tuple<vector<int>, int>>>::iterator subsetIterator = bestPartition.begin(); subsetIterator != bestPartition.end(); subsetIterator++)
@@ -69,11 +100,19 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
         }
     }
 
+    #ifdef _DEBUG
+    cout << "Creating child nodes...\n";
+    #endif
+
     //create child nodes for each vector
     for(map<int, vector<tuple<vector<int>, int>>>::iterator partitionIterator = bestPartition.begin(); partitionIterator != bestPartition.end(); partitionIterator++)
     {
         childNodes.emplace(partitionIterator->first, make_unique<DTNode>(partitionIterator->second));
     }
+
+    #ifdef _DEBUG
+    cout << "Finished creating child nodes\n";
+    #endif
 }
 
 DTNode::~DTNode()
@@ -86,16 +125,18 @@ map<int, unique_ptr<DTNode>>& DTNode::getChildNodes()
 
 int DTNode::labelData(vector<int> data)
 {
-    //check if there are child nodes. If not then return most common label
-    if(childNodes.empty())
-    {
-        return mostCommonLabel;
-    }
+    #ifdef _DEBUG
+    cout << "Inside labelData...\n";
+    #endif
 
     //check split variable to determine the index of what data point to determine appropriate child node.
     //if child index corresponding to attribute value is not null, delete the index from the vector and pass the data point to the appropriate child node
     if(childNodes.count(data.at(indexToSplitOn)))
     {
+        #ifdef _DEBUG
+        cout << "Routing data on feature " << indexToSplitOn << endl;
+        #endif
+
         int dataValue = data.at(indexToSplitOn);
         data.erase(data.begin() + indexToSplitOn);
 
@@ -104,6 +145,10 @@ int DTNode::labelData(vector<int> data)
     //else return most common value at this node, since there are no child nodes with that value
     else
     {
+        #ifdef _DEBUG
+        cout << "No child node for data's selected feature value, returning " << mostCommonLabel << endl;
+        #endif
+
         return mostCommonLabel;
     }
     
