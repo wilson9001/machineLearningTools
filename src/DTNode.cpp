@@ -99,7 +99,7 @@ int DTNode::labelData(vector<int> data)
         int dataValue = data.at(indexToSplitOn);
         data.erase(data.begin() + indexToSplitOn);
 
-        return childNodes.at(dataValue)->labelData;
+        return childNodes.at(dataValue)->labelData(data);
     }
     //else return most common value at this node, since there are no child nodes with that value
     else
@@ -112,10 +112,18 @@ int DTNode::labelData(vector<int> data)
 void DTNode::printAttributeSplits(size_t depth)
 {
     //on a new line, add spaces corresponding to how deep the node is in the tree
-    //if the node has children then print the index the data was split on, followed by a colon to indicate this is not a leaf node
-    //TODO: otherwise print an X to indicate this is a leaf node
+    cout << endl << string(depth, ' ');
 
-    cout << endl << string(depth, ' ') << indexToSplitOn << ":";
+    if(childNodes.empty())
+    {
+        //print an X to indicate this is a leaf node
+        cout << "X";
+    }
+    else
+    {
+        //print the index the data was split on, followed by a colon to indicate this is not a leaf node
+        cout << indexToSplitOn << ":";
+    }
 
     //increment the depth count and recursively call this function on all child nodes.
     depth++;

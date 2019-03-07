@@ -1,7 +1,9 @@
 #include "DecisionTree.h"
 
-DecisionTree::DecisionTree(Rand &r): SupervisedLearner(), m_rand(r), root(nullptr)
-{}
+DecisionTree::DecisionTree(Rand &r): SupervisedLearner(), m_rand(r)
+{
+    root = nullptr;
+}
 
 DecisionTree::~DecisionTree()
 {}
@@ -41,6 +43,8 @@ int DecisionTree::classifyData(vector<int> data)
     else
     {
         ThrowError("Attempted to classify data with uninitialized tree");
+        //this will never be reached but the compiler issues a warning without it.
+        return -1;
     }
 }
 

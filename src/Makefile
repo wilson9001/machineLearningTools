@@ -39,7 +39,8 @@ CPP_FILES =\
 	NonInputNode.cpp\
 	MiddleNode.cpp\
 	Layer.cpp\
-
+	DecisionTree.cpp\
+	DTNode.cpp\
 ################
 # Lists
 ################

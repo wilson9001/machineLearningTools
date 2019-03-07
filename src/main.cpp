@@ -10,6 +10,7 @@
 #include "filter.h"
 #include "perceptron.h"
 #include "NeuralNet.h"
+#include "DecisionTree.h"
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -135,7 +136,7 @@ SupervisedLearner* getLearner(string model, Rand& r)
 	else if (model.compare("neuralnet") == 0)
 		return new NeuralNet(r);
 	else if (model.compare("decisiontree") == 0)
-		ThrowError("Sorry, ", model, " is not yet implemented");
+		return new DecisionTree(r);
 	else if (model.compare("naivebayes") == 0)
 		ThrowError("Sorry, ", model, " is not yet implemented");
 	else if (model.compare("knn") == 0)
