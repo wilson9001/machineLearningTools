@@ -3,7 +3,7 @@
 DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
 {
     #ifdef _DEBUG
-    cout << "\nInside DTNode constructor... measuring entropy\n";
+    //cout << "\nInside DTNode constructor... measuring entropy\n";
     #endif
 
     //measure entropy for whole set and set most common label for node in the process
@@ -11,10 +11,10 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     
     //check if stopping criteria met. If so then stop partitioning and just set most common label, initialize childNodes to nothing and set split index to -1.
     //for now we will use complete purity of subset to determine when to stop
-    if(!wholeEntropy)
+    if(wholeEntropy == 0)
     {
         #ifdef _DEBUG
-        cout << "Data set is pure. This is a leaf node\n";
+        //cout << "Data set is pure. This is a leaf node\n";
         #endif
 
         childNodes = map<int, unique_ptr<DTNode>>();
@@ -24,13 +24,13 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     }
 
     #ifdef _DEBUG
-    cout << "Entropy of whole set is " << wholeEntropy << endl;
+    //cout << "Entropy of whole set is " << wholeEntropy << endl;
     #endif
 
     double gain;
     double partitionedEntropy = 0;
     double entropyOfPartition = 0;
-    int currentBestIndexForGain;
+    int currentBestIndexForGain = -2;
     double currentBestGain = 0;
 
     //partition dataAndLabels into all possible subsets based on a trait
@@ -38,8 +38,20 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
 
     int featureCount = get<0>(dataAndLabels.at(0)).size();
 
+    if(featureCount == 0)
+    {
+        #ifdef _DEBUG
+        //cout << "No more features to split on" << endl;
+        #endif
+
+        childNodes = map<int, unique_ptr<DTNode>>();
+        indexToSplitOn = -1;
+
+        return;
+    }
+
     #ifdef _DEBUG
-    cout << "\nCreating all possible data subsets based on each one of " << featureCount << " traits...\n";
+    //cout << "\nCreating all possible data subsets based on each one of " << featureCount << " traits...\n";
     #endif
 
     for(int featureIndex = 0; featureIndex < featureCount; featureIndex++)
@@ -52,7 +64,7 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     int featureIndex = 0;
 
     #ifdef _DEBUG
-    cout << "Calculating possible gains on each of " << partitionedDataSets.size() << " sets (should match # traits)\n------------------------------------------------------------------------------------\n";
+    //cout << "Calculating possible gains on each of " << partitionedDataSets.size() << " sets (should match # traits)\n------------------------------------------------------------------------------------\n";
     #endif
 
     //for each possible way to partition the data...
@@ -66,19 +78,19 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
             double proportionOfSet = static_cast<double>((dataSet->second).size())/static_cast<double>(dataAndLabels.size());
 
             #ifdef _DEBUG
-            cout << "\nproportion of set = " << (dataSet->second).size() << "/" << dataAndLabels.size() << " = " << proportionOfSet;
+            //cout << "\nproportion of set = " << (dataSet->second).size() << "/" << dataAndLabels.size() << " = " << proportionOfSet;
             #endif
 
             entropyOfPartition = proportionOfSet * measureEntropyAndSetCommonLabel(dataSet->second, false);
 
             #ifdef _DEBUG
-            cout << "partitionedEntropy = " << partitionedEntropy << " + " << entropyOfPartition;
+            //cout << "partitionedEntropy = " << partitionedEntropy << " + " << entropyOfPartition;
             #endif
 
             partitionedEntropy += entropyOfPartition;
 
             #ifdef _DEBUG
-            cout << " = " << partitionedEntropy << endl;
+            //cout << " = " << partitionedEntropy << endl;
             #endif
         }
 
@@ -86,14 +98,14 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
         gain = wholeEntropy - partitionedEntropy;
 
         #ifdef _DEBUG
-        cout << "\nOverall possible gain for this data set: " << wholeEntropy << " - " << partitionedEntropy << " = " << gain << "\nfeatureIndex = " << featureIndex << "\n------------------------------------------------------------------------------------\n";
+        //cout << "\nOverall possible gain for this data set: " << wholeEntropy << " - " << partitionedEntropy << " = " << gain << "\nfeatureIndex = " << featureIndex << "\n------------------------------------------------------------------------------------\n";
         #endif
 
         //track greatest gain and index that had it.
         if(gain > currentBestGain)
         {
             #ifdef _DEBUG
-            cout << "New best gain is " << gain << " at index " << featureIndex << endl;
+            //cout << "New best gain is " << gain << " at index " << featureIndex << endl;
             #endif
 
             currentBestGain = gain;
@@ -104,8 +116,10 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     }
 
     #ifdef _DEBUG
-    cout << "Best gain: " << currentBestGain << " at feature index " << currentBestIndexForGain << endl;
+    //cout << "Best gain: " << currentBestGain << " at feature index " << currentBestIndexForGain << endl;
     #endif
+
+    indexToSplitOn = currentBestIndexForGain;
 
     //keep best partition of data
     map<int, vector<tuple<vector<int>, int>>> bestPartition = partitionedDataSets.at(currentBestIndexForGain);
@@ -114,7 +128,7 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     partitionedDataSets.clear();
 
     #ifdef _DEBUG
-    cout << "Removing feature " << currentBestIndexForGain << " from data sets...\n";
+    //cout << "Removing feature " << currentBestIndexForGain << " from data sets...\n";
     #endif
 
     //remove feature to split on from data set
@@ -127,7 +141,7 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     }
 
     #ifdef _DEBUG
-    cout << "Creating child nodes...\n";
+    //cout << "Creating child nodes...\n";
     #endif
 
     //create child nodes for each vector
@@ -137,7 +151,7 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     }
 
     #ifdef _DEBUG
-    cout << "Finished creating child nodes\n";
+    //cout << "Finished creating child nodes\n";
     #endif
 }
 
@@ -152,18 +166,28 @@ map<int, unique_ptr<DTNode>>& DTNode::getChildNodes()
 int DTNode::labelData(vector<int> data)
 {
     #ifdef _DEBUG
-    cout << "Inside labelData...\n";
+    //cout << "Inside labelData... label to split on is: " << indexToSplitOn << endl;
     #endif
+
+    if(childNodes.empty())
+    {
+        #ifdef _DEBUG
+        //cout << "No child nodes... returning: " << mostCommonLabel << endl << endl;
+        #endif
+
+        return mostCommonLabel;
+    }
 
     //check split variable to determine the index of what data point to determine appropriate child node.
     //if child index corresponding to attribute value is not null, delete the index from the vector and pass the data point to the appropriate child node
     if(childNodes.count(data.at(indexToSplitOn)))
     {
+        int dataValue = data.at(indexToSplitOn);
+
         #ifdef _DEBUG
-        cout << "Routing data on feature " << indexToSplitOn << endl;
+        //cout << "Routing data on feature " << indexToSplitOn << " with value " << dataValue << endl;
         #endif
 
-        int dataValue = data.at(indexToSplitOn);
         data.erase(data.begin() + indexToSplitOn);
 
         return childNodes.at(dataValue)->labelData(data);
@@ -172,12 +196,11 @@ int DTNode::labelData(vector<int> data)
     else
     {
         #ifdef _DEBUG
-        cout << "No child node for data's selected feature value, returning " << mostCommonLabel << endl;
+        //cout << "No child node for data's selected feature value, returning " << mostCommonLabel << endl << endl;
         #endif
 
         return mostCommonLabel;
     }
-    
 }
 
 void DTNode::printAttributeSplits(size_t depth)
@@ -196,6 +219,7 @@ void DTNode::printAttributeSplits(size_t depth)
         cout << indexToSplitOn << ":";
     }
 
+    cout << "\t\t->" << mostCommonLabel;
     //increment the depth count and recursively call this function on all child nodes.
     depth++;
 
@@ -262,7 +286,7 @@ double DTNode::measureEntropyAndSetCommonLabel(vector<tuple<vector<int>, int>>& 
     map<int, size_t> labelsToDataInstanceCounts = map<int, size_t>();
 
     #ifdef _DEBUG
-    cout << "\nInside measureEntropyAndSetCommonLabel\ntracking label sizes\n";
+    //cout << "\nInside measureEntropyAndSetCommonLabel\ntracking label sizes\n";
     #endif
 
     //track label sizes
@@ -277,7 +301,7 @@ double DTNode::measureEntropyAndSetCommonLabel(vector<tuple<vector<int>, int>>& 
     }
 
     #ifdef _DEBUG
-    cout << "Calculating entropies...\n";
+    //cout << "Calculating entropies...\n";
     #endif
 
     double entropy = 0;
@@ -288,19 +312,19 @@ double DTNode::measureEntropyAndSetCommonLabel(vector<tuple<vector<int>, int>>& 
     {
         double p = (static_cast<double>(labelsToDataInstanceCountsIter->second))/static_cast<double>(dataAndLabels.size());
         #ifdef _DEBUG
-        cout << "p: " << labelsToDataInstanceCountsIter->second << "/" << dataAndLabels.size() << " = " << p << ", ";
-        cout.flush();
+        //cout << "p: " << labelsToDataInstanceCountsIter->second << "/" << dataAndLabels.size() << " = " << p << ", ";
+        //cout.flush();
         #endif
 
         double log2p = log2(p);
         #ifdef _DEBUG
-        cout << "log2p: " << log2p << ", ";
-        cout.flush();
+        //cout << "log2p: " << log2p << ", ";
+        //cout.flush();
         #endif
 
         double subsetEntropy = (p * log2p);
         #ifdef _DEBUG
-        cout << "subset entropy: " << subsetEntropy << endl;
+        //cout << "subset entropy: " << subsetEntropy << endl;
         #endif
 
         entropy -= subsetEntropy;
@@ -313,7 +337,7 @@ double DTNode::measureEntropyAndSetCommonLabel(vector<tuple<vector<int>, int>>& 
     }
 
     #ifdef _DEBUG
-    cout << "Total entropy for this set: " << entropy << endl;
+    //cout << "Total entropy for this set: " << entropy << endl;
     #endif
 
     return entropy;

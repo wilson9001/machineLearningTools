@@ -25,7 +25,7 @@ size_t DecisionTree::getTreeDepth()
 void DecisionTree::createTree(vector<tuple<vector<int>, int>> dataAndLabel)
 {
     #ifdef _DEBUG
-    cout << "Inside createTree...\n";
+    //cout << "Inside createTree...\n";
     #endif
 
     if(dataAndLabel.empty())
@@ -127,6 +127,7 @@ void DecisionTree::train(Matrix &features, Matrix &labels)
     if(getenv("TREE") && !strncmp(getenv("TREE"), "y", 1))
     {
         printAttributeSplits();
+        cout << endl << endl;
     }
 
     //measure training accuracy and possibly validation set accuracy
@@ -137,17 +138,35 @@ void DecisionTree::train(Matrix &features, Matrix &labels)
 
 void DecisionTree::predict(const vector<double> &features, vector<double> &labels)
 {
+    #ifdef _DEBUG
+    //cout << "Inside predict function" << endl;
+    #endif
+
     //copy features so they can be removed in decision tree
     vector<int> featuresCopy = vector<int>();
 
+    double safeFeature;
+
     for(double feature : features)
     {
-        featuresCopy.push_back(static_cast<int>(feature));
+        safeFeature = feature < 0 ? -1 : feature;
+        featuresCopy.push_back(static_cast<int>(safeFeature));
     }
 
     //call the classifyData function to recursively label the data.
-    double label = root->labelData(featuresCopy);
+    int label = root->labelData(featuresCopy);
+
+    #ifdef _DEBUG
+    //cout << "Raw label value is: " << label << ", cast label is: ";
+    //cout.flush();
+    #endif
+
+    double castLabel = static_cast<double>(label);
+
+    #ifdef _DEBUG
+    //cout << castLabel << endl << endl;
+    #endif
 
     //set value in label with returned answer
-    labels.at(0) = static_cast<double>(label);
+    labels.at(0) = castLabel;
 }
