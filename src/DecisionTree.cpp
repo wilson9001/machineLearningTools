@@ -90,15 +90,15 @@ void DecisionTree::train(Matrix &features, Matrix &labels)
         castFeatureRow.clear();
 
         #ifdef _DEBUG
-        cout << "Casting features:\n";
+        //cout << "Casting features:\n";
         #endif
 
         //cast features
         for(double feature : featureRow)
         {
             #ifdef _DEBUG
-            cout << feature << " ";
-            cout.flush();
+            //cout << feature << " ";
+            //cout.flush();
             #endif
             
             safeFeature = feature < 0 ? UNKNOWNCATEGORYVALUE : feature;
@@ -107,14 +107,14 @@ void DecisionTree::train(Matrix &features, Matrix &labels)
         }
 
         #ifdef _DEBUG
-        cout << "\nCasting label: " << labelRow.at(0) << endl;
+        //cout << "\nCasting label: " << labelRow.at(0) << endl;
         #endif
 
         //cast label
         label = static_cast<int>(labelRow.at(0));
 
         #ifdef _DEBUG
-        cout << "Packing it all together...\n";
+        //cout << "Packing it all together...\n";
         #endif
         //pack it all together
         dataAndLabels.push_back(make_tuple(castFeatureRow, label));

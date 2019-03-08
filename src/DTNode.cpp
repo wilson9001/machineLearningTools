@@ -3,7 +3,7 @@
 DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
 {
     #ifdef _DEBUG
-    cout << "Inside DTNode constructor... measuring entropy\n";
+    cout << "\nInside DTNode constructor... measuring entropy\n";
     #endif
 
     //measure entropy for whole set and set most common label for node in the process
@@ -28,6 +28,8 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     #endif
 
     double gain;
+    double partitionedEntropy = 0;
+    double entropyOfPartition = 0;
     int currentBestIndexForGain;
     double currentBestGain = 0;
 
@@ -37,7 +39,7 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     int featureCount = get<0>(dataAndLabels.at(0)).size();
 
     #ifdef _DEBUG
-    cout << "Creating all possible data subsets based on one trait...\n";
+    cout << "\nCreating all possible data subsets based on each one of " << featureCount << " traits...\n";
     #endif
 
     for(int featureIndex = 0; featureIndex < featureCount; featureIndex++)
@@ -50,26 +52,50 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     int featureIndex = 0;
 
     #ifdef _DEBUG
-    cout << "Calculating possible gains...\n";
+    cout << "Calculating possible gains on each of " << partitionedDataSets.size() << " sets (should match # traits)\n------------------------------------------------------------------------------------\n";
     #endif
 
+    //for each possible way to partition the data...
     for(map<int, vector<tuple<vector<int>, int>>>& partitionedDataSet : partitionedDataSets)
     {
-        gain = wholeEntropy;
+        partitionedEntropy = 0;
 
-        //from current entropy subtract the entropy of each subset in group to measure overall information gain of partitioning the data this way
+        //accumulate the entropy of each subset to measure overall entropy of divided set
         for(map<int, vector<tuple<vector<int>, int>>>::iterator dataSet = partitionedDataSet.begin(); dataSet != partitionedDataSet.end(); dataSet++)
         {
-            gain -= measureEntropyAndSetCommonLabel(dataSet->second, false);
+            double proportionOfSet = static_cast<double>((dataSet->second).size())/static_cast<double>(dataAndLabels.size());
+
+            #ifdef _DEBUG
+            cout << "\nproportion of set = " << (dataSet->second).size() << "/" << dataAndLabels.size() << " = " << proportionOfSet;
+            #endif
+
+            entropyOfPartition = proportionOfSet * measureEntropyAndSetCommonLabel(dataSet->second, false);
+
+            #ifdef _DEBUG
+            cout << "partitionedEntropy = " << partitionedEntropy << " + " << entropyOfPartition;
+            #endif
+
+            partitionedEntropy += entropyOfPartition;
+
+            #ifdef _DEBUG
+            cout << " = " << partitionedEntropy << endl;
+            #endif
         }
 
+        //calculate loss of entropy (aka information gain)
+        gain = wholeEntropy - partitionedEntropy;
+
         #ifdef _DEBUG
-        cout << gain << endl;
+        cout << "\nOverall possible gain for this data set: " << wholeEntropy << " - " << partitionedEntropy << " = " << gain << "\nfeatureIndex = " << featureIndex << "\n------------------------------------------------------------------------------------\n";
         #endif
 
         //track greatest gain and index that had it.
         if(gain > currentBestGain)
         {
+            #ifdef _DEBUG
+            cout << "New best gain is " << gain << " at index " << featureIndex << endl;
+            #endif
+
             currentBestGain = gain;
             currentBestIndexForGain = featureIndex;
         }
@@ -88,7 +114,7 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     partitionedDataSets.clear();
 
     #ifdef _DEBUG
-    cout << "Removing feature from data sets...\n";
+    cout << "Removing feature " << currentBestIndexForGain << " from data sets...\n";
     #endif
 
     //remove feature to split on from data set
@@ -235,6 +261,10 @@ double DTNode::measureEntropyAndSetCommonLabel(vector<tuple<vector<int>, int>>& 
 {
     map<int, size_t> labelsToDataInstanceCounts = map<int, size_t>();
 
+    #ifdef _DEBUG
+    cout << "\nInside measureEntropyAndSetCommonLabel\ntracking label sizes\n";
+    #endif
+
     //track label sizes
     for(tuple<vector<int>, int>& entry : dataAndLabels)
     {
@@ -246,13 +276,34 @@ double DTNode::measureEntropyAndSetCommonLabel(vector<tuple<vector<int>, int>>& 
         labelsToDataInstanceCounts.at(get<1>(entry))++;
     }
 
+    #ifdef _DEBUG
+    cout << "Calculating entropies...\n";
+    #endif
+
     double entropy = 0;
     size_t greatestDataInstanceCount = 0;
 
     //calculate entropy and find most common label
     for(map<int, size_t>::iterator labelsToDataInstanceCountsIter = labelsToDataInstanceCounts.begin(); labelsToDataInstanceCountsIter != labelsToDataInstanceCounts.end(); labelsToDataInstanceCountsIter++)
     {
-        entropy -= (((labelsToDataInstanceCountsIter->second)/dataAndLabels.size()) * log2((labelsToDataInstanceCountsIter->second)/dataAndLabels.size()));
+        double p = (static_cast<double>(labelsToDataInstanceCountsIter->second))/static_cast<double>(dataAndLabels.size());
+        #ifdef _DEBUG
+        cout << "p: " << labelsToDataInstanceCountsIter->second << "/" << dataAndLabels.size() << " = " << p << ", ";
+        cout.flush();
+        #endif
+
+        double log2p = log2(p);
+        #ifdef _DEBUG
+        cout << "log2p: " << log2p << ", ";
+        cout.flush();
+        #endif
+
+        double subsetEntropy = (p * log2p);
+        #ifdef _DEBUG
+        cout << "subset entropy: " << subsetEntropy << endl;
+        #endif
+
+        entropy -= subsetEntropy;
 
         if(wholeSet && labelsToDataInstanceCountsIter->second > greatestDataInstanceCount)
         {
@@ -260,6 +311,10 @@ double DTNode::measureEntropyAndSetCommonLabel(vector<tuple<vector<int>, int>>& 
             greatestDataInstanceCount = labelsToDataInstanceCountsIter->second;
         }
     }
+
+    #ifdef _DEBUG
+    cout << "Total entropy for this set: " << entropy << endl;
+    #endif
 
     return entropy;
 }
