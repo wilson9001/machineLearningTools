@@ -18,6 +18,7 @@ class DecisionTree : public SupervisedLearner
     const size_t PRINTTREEMARGIN = 0;
     public:
     const int UNKNOWNCATEGORYVALUE = -1;
+    const double VALIDATIONPERCENTAGE = .2;
 
     DecisionTree(Rand &r);
     ~DecisionTree();

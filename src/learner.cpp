@@ -16,6 +16,7 @@
 
 using std::vector;
 using std::cout;
+using std::ofstream;
 
 double SupervisedLearner::measureAccuracy(Matrix& features, Matrix& labels, Matrix* pOutStats)
 {
@@ -112,6 +113,12 @@ double SupervisedLearner::crossValidate(size_t reps, size_t folds, Matrix& featu
 			{
 				cout << "Rep: " << rep << ", Fold: " << fold << ", Accuracy: " << accuracy << "\n";
 				cout.flush();
+
+				ofstream outFile("accuracyResults.csv", ofstream::app);
+
+				outFile << accuracy << ",";
+
+				outFile.close();
 			}
 		}
 	}

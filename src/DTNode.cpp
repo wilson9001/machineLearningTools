@@ -20,6 +20,7 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
         childNodes = map<int, unique_ptr<DTNode>>();
         //the chances of this many features being in use is small enough that this is basically to trigger exceptions if trying to go deeper in tree with no children and this wasn't caught. Better than garbage data in my opinion...
         indexToSplitOn = -1;
+        isLeaf = true;
         return;
     }
 
@@ -46,6 +47,7 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
 
         childNodes = map<int, unique_ptr<DTNode>>();
         indexToSplitOn = -1;
+        isLeaf = true;
 
         return;
     }
@@ -53,6 +55,8 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     #ifdef _DEBUG
     //cout << "\nCreating all possible data subsets based on each one of " << featureCount << " traits...\n";
     #endif
+
+    isLeaf = false;
 
     for(int featureIndex = 0; featureIndex < featureCount; featureIndex++)
     {
@@ -169,7 +173,7 @@ int DTNode::labelData(vector<int> data)
     //cout << "Inside labelData... label to split on is: " << indexToSplitOn << endl;
     #endif
 
-    if(childNodes.empty())
+    if(isLeaf)
     {
         #ifdef _DEBUG
         //cout << "No child nodes... returning: " << mostCommonLabel << endl << endl;
@@ -208,7 +212,7 @@ void DTNode::printAttributeSplits(size_t depth)
     //on a new line, add spaces corresponding to how deep the node is in the tree
     cout << endl << string(depth, ' ');
 
-    if(childNodes.empty())
+    if(isLeaf)
     {
         //print an X to indicate this is a leaf node
         cout << "X";
@@ -219,18 +223,66 @@ void DTNode::printAttributeSplits(size_t depth)
         cout << indexToSplitOn << ":";
     }
 
-    cout << "\t\t->" << mostCommonLabel;
+    cout << "\t\t\t->" << mostCommonLabel;
     //increment the depth count and recursively call this function on all child nodes.
     depth++;
 
+    if(!isLeaf)
+    {
+        for(map<int, unique_ptr<DTNode>>::iterator childNodesIterator = childNodes.begin(); childNodesIterator != childNodes.end(); childNodesIterator++)
+        {
+            childNodesIterator->second->printAttributeSplits(depth);
+        }
+    }
+}
+
+void DTNode::restoreChildNodes(size_t depthToRestore)
+{
+    if(!depthToRestore)
+    {
+        return;
+    }
+
+    if(childNodes.empty())
+    {
+        isLeaf = true;
+        return;
+    }
+
+    if(--depthToRestore)
+    {
+        isLeaf = false;
+        
+        for(map<int, unique_ptr<DTNode>>::iterator childNodesIterator = childNodes.begin(); childNodesIterator != childNodes.end(); childNodesIterator++)
+        {
+            childNodesIterator->second->restoreChildNodes(depthToRestore);
+        }
+    }
+}
+
+void DTNode::markThisAndAllChildrenAsLeaves()
+{
+    isLeaf = true;
+
     for(map<int, unique_ptr<DTNode>>::iterator childNodesIterator = childNodes.begin(); childNodesIterator != childNodes.end(); childNodesIterator++)
     {
-        childNodesIterator->second->printAttributeSplits(depth);
+        childNodesIterator->second->markThisAndAllChildrenAsLeaves();
     }
 }
 
 void DTNode::pruneChild(size_t depthUntilCutoff)
 {
+    if(!depthUntilCutoff)
+    {
+        return;
+    }
+
+    if(childNodes.empty())
+    {
+        isLeaf = true;
+        return;
+    }
+
     //if depth is > 0, pass down to children
     if(--depthUntilCutoff)
     {
@@ -241,8 +293,7 @@ void DTNode::pruneChild(size_t depthUntilCutoff)
     }
     else
     {
-        //otherwise remove child nodes
-        childNodes.clear();
+        markThisAndAllChildrenAsLeaves();
     }
 }
 
@@ -250,9 +301,12 @@ size_t DTNode::getTreeNodeCount()
 {
     size_t nodeCount = 0;
 
-    for(map<int, unique_ptr<DTNode>>::iterator childNodesIterator = childNodes.begin(); childNodesIterator != childNodes.end(); childNodesIterator++)
+    if(!isLeaf)
     {
-        nodeCount += childNodesIterator->second->getTreeNodeCount();
+        for(map<int, unique_ptr<DTNode>>::iterator childNodesIterator = childNodes.begin(); childNodesIterator != childNodes.end(); childNodesIterator++)
+        {
+            nodeCount += childNodesIterator->second->getTreeNodeCount();
+        }
     }
 
     return ++nodeCount;
@@ -262,22 +316,24 @@ size_t DTNode::getTreeNodeDepth()
 {
     size_t maxNodeDepth = 0;
 
-    vector<size_t> possibleDepths = vector<size_t>();
-    possibleDepths.reserve(childNodes.size());
-
-    for(map<int, unique_ptr<DTNode>>::iterator childNodesIterator = childNodes.begin(); childNodesIterator != childNodes.end(); childNodesIterator++)
+    if(!isLeaf)
     {
-        possibleDepths.push_back(childNodesIterator->second->getTreeNodeDepth());
-    }
+        vector<size_t> possibleDepths = vector<size_t>();
+        possibleDepths.reserve(childNodes.size());
 
-    for(size_t depth : possibleDepths)
-    {
-        if(depth > maxNodeDepth)
+        for(map<int, unique_ptr<DTNode>>::iterator childNodesIterator = childNodes.begin(); childNodesIterator != childNodes.end(); childNodesIterator++)
         {
-            maxNodeDepth = depth;
+            possibleDepths.push_back(childNodesIterator->second->getTreeNodeDepth());
+        }
+
+        for(size_t depth : possibleDepths)
+        {
+            if(depth > maxNodeDepth)
+            {
+                maxNodeDepth = depth;
+            }
         }
     }
-
     return ++maxNodeDepth;
 }
 

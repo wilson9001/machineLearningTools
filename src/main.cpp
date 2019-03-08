@@ -352,6 +352,12 @@ void doit(ArgParser& parser)
 		else
 			cout << "Mean predictive accuracy: " << accuracy << "\n";
 		cout.flush();
+
+		ofstream outFile("accuracyResults.csv", ofstream::app);
+
+		outFile << "," << accuracy << endl;
+
+		outFile.close();
 	}
 }
 

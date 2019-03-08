@@ -16,7 +16,9 @@ class DTNode
     map<int, unique_ptr<DTNode>> childNodes;
     size_t indexToSplitOn;
     bool stoppingCriteriaMet(vector<tuple<vector<int>, int>> dataAndLabels);
-
+    bool isLeaf;
+    void markThisAndAllChildrenAsLeaves();
+    
     protected:
     int mostCommonLabel;
 
@@ -26,19 +28,19 @@ class DTNode
     map<int, vector<tuple<vector<int>, int>>> partitionData(vector<tuple<vector<int>, int>> dataAndLabels, int index);
     
     public:
-    const int PRUNEALLCHILDNODES = -1;
-    
     DTNode(vector<tuple<vector<int>, int>> dataAndLabels);
     ~DTNode();
 
     map<int, unique_ptr<DTNode>>& getChildNodes();
     
-    virtual int labelData(vector<int> data);
-    virtual void printAttributeSplits(size_t depth);
-    //pass in vector with PRUNEALLCHILDNODES as first element to prune all child nodes.
-    virtual void pruneChild(size_t depthUntilCutoff);
-    virtual size_t getTreeNodeCount();
-    virtual size_t getTreeNodeDepth();
+    int labelData(vector<int> data);
+    void printAttributeSplits(size_t depth);
+    //passing in 0 does nothing, passing in 1 leaves only root node
+    void pruneChild(size_t depthUntilCutoff);
+    //passing in 0 does nothing, passing in 1 leaves only root node. Passing in 2 leaves root node and root's children
+    void restoreChildNodes(size_t depthToRestore);
+    size_t getTreeNodeCount();
+    size_t getTreeNodeDepth();
 };
 
 #endif

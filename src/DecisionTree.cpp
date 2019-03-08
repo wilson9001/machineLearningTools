@@ -66,8 +66,35 @@ void DecisionTree::pruneTree(size_t depthLimit)
 
 void DecisionTree::train(Matrix &features, Matrix &labels)
 {
+    Matrix validationSetFeatures(features);
+    Matrix validationSetLabels(labels);
+    Matrix trainingSetFeatures(features);
+    Matrix trainingSetLabels(labels);
+
+    size_t validationSetSize = static_cast<size_t>(features.rows() * VALIDATIONPERCENTAGE);
+
+    size_t i = 0;
+
+    features.shuffleRows(m_rand, &labels);
+
     #ifdef _DEBUG
-    cout << "Beginning training...\n";
+    cout << "Creating validation set with " << validationSetSize << " rows" << endl;
+    #endif
+
+    for(; i < validationSetSize; i++)
+    {
+        validationSetFeatures.copyRow(features.row(i));
+        validationSetLabels.copyRow(labels.row(i));
+    }
+
+    for(; i < features.rows(); i++)
+    {
+        trainingSetFeatures.copyRow(features.row(i));
+        trainingSetLabels.copyRow(labels.row(i));
+    }
+
+    #ifdef _DEBUG
+    cout << "Validation set has " << validationSetFeatures.rows() << " rows of features and " << validationSetLabels.rows() << " rows of labels,\nTraining set has " << trainingSetFeatures.rows() << "rows of features and " << validationSetLabels.rows() << " rows of labels\nBeginning training..." << endl;
     #endif
     //conditionally create validation set
 
@@ -81,10 +108,10 @@ void DecisionTree::train(Matrix &features, Matrix &labels)
     cout << "Packing data and labels into tuples...\n";
     #endif
 
-    for(size_t i = 0; i < features.rows(); i++)
+    for(size_t i = 0; i < trainingSetFeatures.rows(); i++)
     {
-        vector<double>& featureRow = features.row(i);
-        vector<double>& labelRow = labels.row(i);
+        vector<double>& featureRow = trainingSetFeatures.row(i);
+        vector<double>& labelRow = trainingSetLabels.row(i);
         double safeFeature;
 
         castFeatureRow.clear();
@@ -123,17 +150,38 @@ void DecisionTree::train(Matrix &features, Matrix &labels)
     //call the create Tree function to recursively create the tree
     createTree(dataAndLabels);
 
+    size_t maxTreeDepth = root->getTreeNodeDepth();
+    size_t bestTreeDepth = maxTreeDepth;
+    double validationAccuracy;
+    double bestValidationAccuracy = measureAccuracy(validationSetFeatures, validationSetLabels);
+
+    //prune the tree for better generalization
+    for(size_t treeDepth = maxTreeDepth - 1; treeDepth > 0; treeDepth--)
+    {
+        root->pruneChild(treeDepth);
+        validationAccuracy = measureAccuracy(validationSetFeatures, validationSetLabels);
+
+        if(validationAccuracy >= bestValidationAccuracy)
+        {
+            bestTreeDepth = treeDepth;
+            bestValidationAccuracy = validationAccuracy;
+        }
+        else
+        {
+            root->restoreChildNodes(bestTreeDepth);
+            break;
+        }
+    }
+
+    cout << "Final validation set accuracy: " << bestValidationAccuracy << endl;
+
     //conditionally print the new tree's structure
     if(getenv("TREE") && !strncmp(getenv("TREE"), "y", 1))
     {
+        cout << "-----------------------------------------------------------------------------------" << endl;
         printAttributeSplits();
-        cout << endl << endl;
+        cout << endl << endl << "-----------------------------------------------------------------------------------" << endl << endl;
     }
-
-    //measure training accuracy and possibly validation set accuracy
-    double trainingMeanSquaredError = pow(measureAccuracy(features, labels), 2);
-
-    cout << "Training Mean Squared Error: " << trainingMeanSquaredError << endl;
 }
 
 void DecisionTree::predict(const vector<double> &features, vector<double> &labels)
