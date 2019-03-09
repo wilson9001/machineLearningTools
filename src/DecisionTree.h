@@ -19,6 +19,8 @@ class DecisionTree : public SupervisedLearner
     public:
     const int UNKNOWNCATEGORYVALUE = -1;
     const double VALIDATIONPERCENTAGE = .2;
+    const char* PRINTTREEENV = "TREE";
+    const char* DATALIMITENV = "DATALIMIT";
 
     DecisionTree(Rand &r);
     ~DecisionTree();

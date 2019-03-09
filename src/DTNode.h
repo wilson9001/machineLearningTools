@@ -18,7 +18,8 @@ class DTNode
     bool stoppingCriteriaMet(vector<tuple<vector<int>, int>> dataAndLabels);
     bool isLeaf;
     void markThisAndAllChildrenAsLeaves();
-    
+    size_t acceptableDataCountFloor;
+
     protected:
     int mostCommonLabel;
 
@@ -28,7 +29,7 @@ class DTNode
     map<int, vector<tuple<vector<int>, int>>> partitionData(vector<tuple<vector<int>, int>> dataAndLabels, int index);
     
     public:
-    DTNode(vector<tuple<vector<int>, int>> dataAndLabels);
+    DTNode(vector<tuple<vector<int>, int>> dataAndLabels, size_t acceptableDataCountFloor);
     ~DTNode();
 
     map<int, unique_ptr<DTNode>>& getChildNodes();

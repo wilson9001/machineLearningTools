@@ -1,6 +1,6 @@
 #include "DTNode.h"
 
-DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
+DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels, size_t acceptableDataCountFloor): acceptableDataCountFloor(acceptableDataCountFloor)
 {
     #ifdef _DEBUG
     //cout << "\nInside DTNode constructor... measuring entropy\n";
@@ -53,14 +53,22 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     }
 
     #ifdef _DEBUG
-    //cout << "\nCreating all possible data subsets based on each one of " << featureCount << " traits...\n";
+    cout << "\nCreating all possible data subsets based on each one of " << featureCount << " traits...\n";
     #endif
-
-    isLeaf = false;
 
     for(int featureIndex = 0; featureIndex < featureCount; featureIndex++)
     {
         partitionedDataSets.push_back(partitionData(dataAndLabels, featureIndex));
+        if(partitionedDataSets.back().empty())
+        {
+            #ifdef _DEBUG
+            cout << "Data set was created under minimum threshold. Removing..." << endl;
+            #endif
+
+            partitionedDataSets.pop_back();
+
+            featureCount--;//????
+        }
     }
 
     //measure the entropy of each new group of subsets
@@ -68,8 +76,21 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     int featureIndex = 0;
 
     #ifdef _DEBUG
-    //cout << "Calculating possible gains on each of " << partitionedDataSets.size() << " sets (should match # traits)\n------------------------------------------------------------------------------------\n";
+    cout << "Calculating possible gains on each of " << partitionedDataSets.size() << " sets (should match # traits = " << featureCount << ")\n------------------------------------------------------------------------------------\n";
     #endif
+
+    if(partitionedDataSets.empty())
+    {
+        isLeaf = true;
+        indexToSplitOn = -1;
+        childNodes = map<int, unique_ptr<DTNode>>();
+
+        #ifdef _DEBUG
+        cout << "All data sets removed for being too small. This is a leaf node" << endl;
+        #endif
+
+        return;
+    }
 
     //for each possible way to partition the data...
     for(map<int, vector<tuple<vector<int>, int>>>& partitionedDataSet : partitionedDataSets)
@@ -125,6 +146,21 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
 
     indexToSplitOn = currentBestIndexForGain;
 
+    if(!currentBestGain)
+    {
+        #ifdef _DEBUG
+        cout << "No further splitting can reduce entropy. This is a leaf node" << endl;
+        #endif
+        isLeaf = true;
+        indexToSplitOn = -1;
+        childNodes = map<int, unique_ptr<DTNode>>();
+        return;
+    }
+
+    #ifdef _DEBUG
+    cout << "Current best gain: " << currentBestGain << "\nCurrent best index for gain: " << currentBestIndexForGain << ", partitionedDataSets.size(): " << partitionedDataSets.size() << endl;
+    #endif
+    
     //keep best partition of data
     map<int, vector<tuple<vector<int>, int>>> bestPartition = partitionedDataSets.at(currentBestIndexForGain);
 
@@ -132,7 +168,7 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     partitionedDataSets.clear();
 
     #ifdef _DEBUG
-    //cout << "Removing feature " << currentBestIndexForGain << " from data sets...\n";
+    cout << "Removing feature " << currentBestIndexForGain << " from data sets...\n";
     #endif
 
     //remove feature to split on from data set
@@ -145,15 +181,30 @@ DTNode::DTNode(vector<tuple<vector<int>, int>> dataAndLabels)
     }
 
     #ifdef _DEBUG
-    //cout << "Creating child nodes...\n";
+    cout << "Creating child nodes...\n";
     #endif
 
     //create child nodes for each vector
     for(map<int, vector<tuple<vector<int>, int>>>::iterator partitionIterator = bestPartition.begin(); partitionIterator != bestPartition.end(); partitionIterator++)
     {
-        childNodes.emplace(partitionIterator->first, make_unique<DTNode>(partitionIterator->second));
+        childNodes.emplace(partitionIterator->first, make_unique<DTNode>(partitionIterator->second, acceptableDataCountFloor));
     }
 
+    if(childNodes.empty())
+    {
+        #ifdef _DEBUG
+        cout << "All possible children were removed for being too small!\nSetting as leaf node..." << endl;
+        #endif
+        
+        isLeaf = true;
+        indexToSplitOn = -1;
+        childNodes = map<int, unique_ptr<DTNode>>();
+    }
+    else
+    {
+        isLeaf = false;
+    }
+    
     #ifdef _DEBUG
     //cout << "Finished creating child nodes\n";
     #endif
@@ -413,6 +464,32 @@ map<int, vector<tuple<vector<int>, int>>> DTNode::partitionData(vector<tuple<vec
         }
 
         partitionedDataAndLabels.at(key).push_back(dataRow);
+    }
+
+    if(acceptableDataCountFloor)
+    {
+        vector<int> entriesToRemove = vector<int>();
+
+        for(map<int, vector<tuple<vector<int>, int>>>::iterator partitionIterator = partitionedDataAndLabels.begin(); partitionIterator != partitionedDataAndLabels.end(); partitionIterator++)
+        {
+            if(partitionIterator->second.size() < acceptableDataCountFloor)
+            {
+                #ifdef _DEBUG
+                cout << "Set with size " << partitionIterator->second.size() << " is under the acceptable size minimum of " << acceptableDataCountFloor << endl;
+                #endif
+                
+                entriesToRemove.push_back(partitionIterator->first);
+            }
+        }
+
+        for(int entry : entriesToRemove)
+        {
+            #ifdef _DEBUG
+            cout << "Removing " << entry << endl;
+            #endif
+
+            partitionedDataAndLabels.erase(entry);
+        }
     }
 
     return partitionedDataAndLabels;

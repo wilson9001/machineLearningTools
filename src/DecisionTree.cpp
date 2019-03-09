@@ -33,8 +33,23 @@ void DecisionTree::createTree(vector<tuple<vector<int>, int>> dataAndLabel)
         ThrowError("Attempted to create decision tree on empty data set");
     }
 
+    size_t acceptableDataSizeThresholdNumber = 0;
+
+    if(getenv(DATALIMITENV))
+    {
+        sscanf(getenv(DATALIMITENV), "%zu", &acceptableDataSizeThresholdNumber);
+    }
+
+    #ifdef _DEBUG
+    cout << "Acceptable data size threshold defined as: " << acceptableDataSizeThresholdNumber << endl;
+    #endif
+
     //call root's createTree function to begin recursively creating tree
-    root = make_unique<DTNode>(dataAndLabel);
+    root = make_unique<DTNode>(dataAndLabel, acceptableDataSizeThresholdNumber);
+
+    #ifdef _DEBUG
+    cout << "Initial tree created" << endl;
+    #endif
 }
 
 int DecisionTree::classifyData(vector<int> data)
@@ -176,7 +191,7 @@ void DecisionTree::train(Matrix &features, Matrix &labels)
     cout << "Final validation set accuracy: " << bestValidationAccuracy << endl;
 
     //conditionally print the new tree's structure
-    if(getenv("TREE") && !strncmp(getenv("TREE"), "y", 1))
+    if(getenv(PRINTTREEENV) && !strncmp(getenv(PRINTTREEENV), "y", 1))
     {
         cout << "-----------------------------------------------------------------------------------" << endl;
         printAttributeSplits();
