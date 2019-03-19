@@ -48,7 +48,11 @@ Vote KNN::determineVote(DistanceQueueEntry& queueEntry)
     //Check environment variable for alterante distance measurement keyword. If none, or eucliedain use euclidean.
     char* weightMethod = getenv(MEASUREWEIGHTENVVAR);
 
-    if(!weightMethod || !strcmp(weightMethod, DEFAULTWEIGHTENV))
+    if(!weightMethod || !strcmp(weightMethod, NOWEIGHTENV))
+    {
+        return {*queueEntry.Data->label, 1};
+    }
+    else if(!strcmp(weightMethod, DEFAULTWEIGHTENV))
     {
         return {*queueEntry.Data->label , 1/queueEntry.distance};
     }
@@ -132,7 +136,7 @@ void KNN::predict(const vector<double> &features, vector<double> &labels)
 
     char* KCount = getenv(KVALUEENVVAR);
 
-    if(KCount && !strcmp(KCount, "0"))
+    if(KCount && strcmp(KCount, "0"))
     {
         stringstream convertor = stringstream(KCount);
 
@@ -174,36 +178,57 @@ void KNN::predict(const vector<double> &features, vector<double> &labels)
             nearestNeighbors->pop_back();
         }
     }
-    
-    //For each entry still in the queue, call the obtain vote function to get the label votes and map the labels to their aggregate strengths
-    unique_ptr<map<double, double>> labelToVoteStrength = make_unique<map<double, double>>();
 
-    for(DistanceQueueEntry& queueEntry : *nearestNeighbors)
+    char* useRegression = getenv(REGRESSIONENVVAR);
+
+    if(!useRegression || !strcmp(useRegression, NOREGRESSION))
     {
-        Vote vote = determineVote(queueEntry);
+        //For each entry still in the queue, call the obtain vote function to get the label votes and map the labels to their aggregate strengths
+        unique_ptr<map<double, double>> labelToVoteStrength = make_unique<map<double, double>>();
 
-        if(!labelToVoteStrength->count(vote.label))
+        for(DistanceQueueEntry& queueEntry : *nearestNeighbors)
         {
-            labelToVoteStrength->emplace(vote.label, vote.weight);
+            Vote vote = determineVote(queueEntry);
+
+            if(!labelToVoteStrength->count(vote.label))
+            {
+                labelToVoteStrength->emplace(vote.label, vote.weight);
+            }
+            else
+            {
+                labelToVoteStrength->at(vote.label) += vote.weight;
+            }
         }
-        else
+
+        //find strongest vote
+        double finalLabel = -1;
+        double currentGreatestWeight = -1;
+
+        for(map<double, double>::iterator voteIterator = labelToVoteStrength->begin(); voteIterator != labelToVoteStrength->end(); voteIterator++)
         {
-            labelToVoteStrength->at(vote.label) += vote.weight;
+            if(voteIterator->second > currentGreatestWeight)
+            {
+                currentGreatestWeight = voteIterator->second;
+                finalLabel = voteIterator->first;
+            }
         }
+
+        labels.at(0) = finalLabel;
     }
-
-    //find strongest vote
-    double finalLabel = -1;
-    double currentGreatestWeight = -1;
-
-    for(map<double, double>::iterator voteIterator = labelToVoteStrength->begin(); voteIterator != labelToVoteStrength->end(); voteIterator++)
+    else if(!strcmp(useRegression, USEREGRESSION))
     {
-        if(voteIterator->second > currentGreatestWeight)
-        {
-            currentGreatestWeight = voteIterator->second;
-            finalLabel = voteIterator->first;
-        }
-    }
+        //find mean of K neighbors
+        double totalValue = 0;
 
-    labels.at(0) = finalLabel;
+        for(DistanceQueueEntry& neighbor : *nearestNeighbors)
+        {
+            totalValue += *neighbor.Data->label;
+        }
+
+        labels.at(0) = totalValue/nearestNeighbors->size();
+    }
+    else
+    {
+        ThrowError("Unknown value entered for regression environment variable.", "Acceptable values are:", USEREGRESSION, NOREGRESSION);
+    }
 }

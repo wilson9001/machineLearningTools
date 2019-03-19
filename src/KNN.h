@@ -47,6 +47,10 @@ class KNN : public SupervisedLearner
     const char* KVALUEENVVAR = "KValue";
     const char* MEASUREWEIGHTENVVAR = "weight";
     const char* DEFAULTWEIGHTENV = "inverseD";
+    const char* NOWEIGHTENV = "none";
+    const char* REGRESSIONENVVAR = "regression";
+    const char* USEREGRESSION = "y";
+    const char* NOREGRESSION = "n";
     //add more environment strings to use future measuring functions later if desired
     
     KNN(Rand &r);
