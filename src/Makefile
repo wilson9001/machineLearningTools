@@ -41,6 +41,7 @@ CPP_FILES =\
 	Layer.cpp\
 	DecisionTree.cpp\
 	DTNode.cpp\
+	KNN.cpp
 ################
 # Lists
 ################

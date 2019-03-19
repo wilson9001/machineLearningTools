@@ -12,40 +12,41 @@
 
 using namespace std;
 
+struct DataPoint
+{
+    vector<double>* features;
+    double* label;
+};
+
+struct DistanceQueueEntry
+{
+    DataPoint* Data;
+    double distance;
+};
+
+struct Vote
+{
+    double label;
+    double weight;
+};
+
 class KNN : public SupervisedLearner
 {
     private:
-    struct DataPoint
-    {
-        vector<double>* features;
-        double* label;
-    };
-
-    struct DistanceQueueEntry
-    {
-        DataPoint* Data;
-        double distance;
-    };
-
-    struct Vote
-    {
-        double label;
-        double weight;
-    };
-
     Rand &m_rand;
     unique_ptr<vector<DataPoint>> dataPoints;
     unique_ptr<vector<double>> medianValues;
-    double measureDistance(vector<double>& coordinates1, vector<double>& coordinates2);
+    double measureDistance(vector<double>* trainingData, const vector<double>& predictingData);
     Vote determineVote(DistanceQueueEntry& queueEntry);
-    double euclideanDistance(vector<double>& coordinates1, vector<double>& coordinates2);
+    double euclideanDistance(vector<double>* trainingData, const vector<double>& predictingData);
     //add more distance measuring functions later if desired.
 
     public:
     const char* EUCLIDEANENV = "EUCLIDEAN";
     const char* MEASUREDISTANCEENVVAR = "distance";
-    const char* KVALUE = "KValue";
-
+    const char* KVALUEENVVAR = "KValue";
+    const char* MEASUREWEIGHTENVVAR = "weight";
+    const char* DEFAULTWEIGHTENV = "inverseD";
     //add more environment strings to use future measuring functions later if desired
     
     KNN(Rand &r);

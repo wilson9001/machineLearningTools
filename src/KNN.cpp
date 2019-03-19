@@ -8,9 +8,9 @@ KNN::KNN(Rand &r):  SupervisedLearner(), m_rand(r)
 
 KNN::~KNN(){}
 
-double KNN::measureDistance(vector<double>& coordinates1, vector<double>& coordinates2)
+double KNN::measureDistance(vector<double>* trainingData, const vector<double>& predictingData)
 {
-    if(coordinates1.size() != coordinates2.size())
+    if(trainingData->size() != predictingData.size())
     {
         ThrowError("Attempted to measure distance on two data points with different numbers of features\n");
     }
@@ -20,7 +20,7 @@ double KNN::measureDistance(vector<double>& coordinates1, vector<double>& coordi
 
     if(!measureDistanceEnv || !strcmp(measureDistanceEnv, EUCLIDEANENV))
     {
-        return euclideanDistance(coordinates1, coordinates2);
+        return euclideanDistance(trainingData, predictingData);
     }
     else
     {
@@ -28,16 +28,15 @@ double KNN::measureDistance(vector<double>& coordinates1, vector<double>& coordi
        //This will never be reached but is necessary to avoid a compiler error
        return -1;
     }
-
 }
 
-double KNN::euclideanDistance(vector<double>& coordinates1, vector<double>& coordinates2)
+double KNN::euclideanDistance(vector<double>* trainingData,const vector<double>& predictingData)
 {
     double totalDistance = 0;
     //Sum of all distances, each squared
-    for(size_t coordinateIndex = 0; coordinateIndex < coordinates1.size(); coordinateIndex++)
+    for(size_t coordinateIndex = 0; coordinateIndex < trainingData->size(); coordinateIndex++)
     {
-        totalDistance += pow((coordinates1.at(coordinateIndex) - coordinates2.at(coordinateIndex)), 2);
+        totalDistance += pow((trainingData->at(coordinateIndex) - predictingData.at(coordinateIndex)), 2);
     }
 
     return sqrt(totalDistance);
@@ -46,7 +45,19 @@ double KNN::euclideanDistance(vector<double>& coordinates1, vector<double>& coor
 //TODO: Implement this
 Vote KNN::determineVote(DistanceQueueEntry& queueEntry)
 {
+    //Check environment variable for alterante distance measurement keyword. If none, or eucliedain use euclidean.
+    char* weightMethod = getenv(MEASUREWEIGHTENVVAR);
 
+    if(!weightMethod || !strcmp(weightMethod, DEFAULTWEIGHTENV))
+    {
+        return {*queueEntry.Data->label , 1/queueEntry.distance};
+    }
+    else
+    {
+       ThrowError("Unknown weight measurement method specified\n");
+       //This will never be reached but is necessary to avoid a compiler error
+       return {-1, -1};
+    }
 }
 
 void KNN::train(Matrix &features, Matrix& labels)
@@ -119,7 +130,7 @@ void KNN::predict(const vector<double> &features, vector<double> &labels)
     //TODO: Create a vector with k spaces (0 < k <= total training points), and go over every point in the training data.
     size_t K = dataPoints->size();
 
-    char* KCount = getenv(KVALUE);
+    char* KCount = getenv(KVALUEENVVAR);
 
     if(KCount && !strcmp(KCount, "0"))
     {
@@ -132,9 +143,67 @@ void KNN::predict(const vector<double> &features, vector<double> &labels)
 
     nearestNeighbors->reserve(K+1);
 
-    //Maintain the distance ordering of the vector by iterating over it and comparing diatances in the structs
-    
-    //Pop the end off the vector if its size exceeds the limit of nodes voting.
+    double distance;
+    size_t oldSize;
 
-    //For each entry still in the queue, call the obtain vote function to get the label votes and their strengths. Map them into aggregate scores and set the label as the highest value.
+    //Maintain the distance ordering of the vector by iterating over it and comparing diatances in the structs
+    for(size_t dataPointIndex = 0; dataPointIndex < dataPoints->size(); dataPointIndex++)
+    {
+        distance = measureDistance(dataPoints->at(dataPointIndex).features, features);
+
+        oldSize = nearestNeighbors->size();
+        for(size_t queueIndex = 0; queueIndex < nearestNeighbors->size(); queueIndex++)
+        {
+            //if the data point is closer than other points in the vector, insert it at the appropriate position
+            if(nearestNeighbors->at(queueIndex).distance > distance)
+            {
+                nearestNeighbors->insert(nearestNeighbors->begin()+queueIndex, {&dataPoints->at(dataPointIndex), distance});
+                break;
+            }
+        }
+
+        //Add point to end of stack if it wasn't already added and the vector is still filling up to size K
+        if(nearestNeighbors->size() == oldSize && nearestNeighbors->size() < K)
+        {
+            nearestNeighbors->push_back({&dataPoints->at(dataPointIndex), distance});
+        }
+        //Pop the end off the vector if its size exceeds the limit of nodes voting
+        //This will be the currently farthest away node in the vector
+        else if(nearestNeighbors->size() > K)
+        {
+            nearestNeighbors->pop_back();
+        }
+    }
+    
+    //For each entry still in the queue, call the obtain vote function to get the label votes and map the labels to their aggregate strengths
+    unique_ptr<map<double, double>> labelToVoteStrength = make_unique<map<double, double>>();
+
+    for(DistanceQueueEntry& queueEntry : *nearestNeighbors)
+    {
+        Vote vote = determineVote(queueEntry);
+
+        if(!labelToVoteStrength->count(vote.label))
+        {
+            labelToVoteStrength->emplace(vote.label, vote.weight);
+        }
+        else
+        {
+            labelToVoteStrength->at(vote.label) += vote.weight;
+        }
+    }
+
+    //find strongest vote
+    double finalLabel = -1;
+    double currentGreatestWeight = -1;
+
+    for(map<double, double>::iterator voteIterator = labelToVoteStrength->begin(); voteIterator != labelToVoteStrength->end(); voteIterator++)
+    {
+        if(voteIterator->second > currentGreatestWeight)
+        {
+            currentGreatestWeight = voteIterator->second;
+            finalLabel = voteIterator->first;
+        }
+    }
+
+    labels.at(0) = finalLabel;
 }
