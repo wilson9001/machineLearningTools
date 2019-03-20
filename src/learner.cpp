@@ -45,7 +45,7 @@ double SupervisedLearner::measureAccuracy(Matrix& features, Matrix& labels, Matr
 			double delta = targ[0] - pred[0];
 			sse += (delta * delta);
 		}
-		return sqrt(sse / features.rows());
+		return /*sqrt*/(sse / features.rows());//removed square root function
 	}
 	else
 	{

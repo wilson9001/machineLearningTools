@@ -246,7 +246,7 @@ void doit(ArgParser& parser)
 			cout << dataset.attrValue(dataset.cols() - 1, i) << ": " << stats[0][i] << "/" << stats[1][i] << "\n";
 		cout << "Set accuracy: " << accuracy;
 
-		Matrix testLabelsContinuousCopy(testLabels);
+		/*Matrix testLabelsContinuousCopy(testLabels);
 
 		for(size_t i = 0; i < testLabels.rows(); i++)
 		{
@@ -256,14 +256,14 @@ void doit(ArgParser& parser)
 		testLabelsContinuousCopy.makeNominalAttrContinuous(0);
 
 		accuracy = pow(learner->measureAccuracy(testFeatures, testLabelsContinuousCopy), 2);
-
+		*/
 		ofstream logFile("accuracyResults.csv", ios_base::app);
 
     	logFile << accuracy << endl;
 
     	logFile.close();
 
-		cout << ", set MSE: " << accuracy;
+		/*cout << ", set MSE: " << accuracy;*/
 
 		cout << "\nTraining time: " << (timeAfterTraining - timeBeforeTraining) << " seconds\n";
 		cout << "\nTesting time: " << (timeAfterTesting - timeBeforeTesting) << " seconds\n";
@@ -316,7 +316,7 @@ void doit(ArgParser& parser)
 			cout << dataset.attrValue(dataset.cols() - 1, i) << ": " << stats[0][i] << "/" << stats[1][i] << "\n";
 		cout << "Set accuracy: " << accuracy;
 
-		Matrix testLabelsContinuousCopy(testLabels);
+		/*Matrix testLabelsContinuousCopy(testLabels);
 
 		for(size_t i = 0; i < testLabels.rows(); i++)
 		{
@@ -325,7 +325,7 @@ void doit(ArgParser& parser)
 
 		testLabelsContinuousCopy.makeNominalAttrContinuous(0);
 
-		accuracy = pow(learner->measureAccuracy(testFeatures, testLabelsContinuousCopy), 2);
+		accuracy = pow(learner->measureAccuracy(testFeatures, testLabelsContinuousCopy), 2);*/
 
 		ofstream logFile("accuracyResults.csv", ios_base::app);
 
@@ -333,7 +333,7 @@ void doit(ArgParser& parser)
 
     	logFile.close();
 
-		cout << ", set MSE: " << accuracy;
+		/*cout << ", set MSE: " << accuracy;*/
 		cout<< "\nTraining time: " << (timeAfterTraining - timeBeforeTraining) << " seconds\n";
 		cout<< "\nTesting time: " << (timeAfterTesting - timeBeforeTesting) << " seconds\n";
 		cout.flush();

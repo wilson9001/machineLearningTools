@@ -3,14 +3,14 @@
 KNN::KNN(Rand &r):  SupervisedLearner(), m_rand(r)
 {
     dataPoints = make_unique<vector<DataPoint>>();
-    medianValues = make_unique<vector<double>>();
+    featureTypes = make_unique<vector<size_t>>();
 }
 
 KNN::~KNN(){}
 
-double KNN::measureDistance(vector<double>* trainingData, const vector<double>& predictingData)
+double KNN::measureDistance(vector<double>& trainingData, const vector<double>& predictingData)
 {
-    if(trainingData->size() != predictingData.size())
+    if(trainingData.size() != predictingData.size())
     {
         ThrowError("Attempted to measure distance on two data points with different numbers of features\n");
     }
@@ -22,27 +22,56 @@ double KNN::measureDistance(vector<double>* trainingData, const vector<double>& 
     {
         return euclideanDistance(trainingData, predictingData);
     }
+    else if(!strcmp(measureDistanceEnv, VARIABLEENV))//handle continuous, nominal, and unknown
+    {
+        return dynamicDistance(trainingData, predictingData);
+    }
     else
     {
        ThrowError("Unknown distance measurement method specified\n");
-       //This will never be reached but is necessary to avoid a compiler error
+       //This will never be reached but is necessary to avoid a compiler warning
        return -1;
     }
 }
 
-double KNN::euclideanDistance(vector<double>* trainingData,const vector<double>& predictingData)
+double KNN::euclideanDistance(vector<double>& trainingData,const vector<double>& predictingData)
 {
     double totalDistance = 0;
     //Sum of all distances, each squared
-    for(size_t coordinateIndex = 0; coordinateIndex < trainingData->size(); coordinateIndex++)
+    for(size_t coordinateIndex = 0; coordinateIndex < trainingData.size(); coordinateIndex++)
     {
-        totalDistance += pow((trainingData->at(coordinateIndex) - predictingData.at(coordinateIndex)), 2);
+        totalDistance += pow((trainingData.at(coordinateIndex) - predictingData.at(coordinateIndex)), 2);
     }
 
     return sqrt(totalDistance);
 }
 
-//TODO: Implement this
+double KNN::dynamicDistance(vector<double>& trainingData, const vector<double>& predictingData)
+{
+    double totalDistance = 0;
+
+    for(size_t coordinateIndex = 0; coordinateIndex < trainingData.size(); coordinateIndex++)
+    {
+        if(trainingData.at(coordinateIndex) == UNKNOWN_VALUE || predictingData.at(coordinateIndex) == UNKNOWN_VALUE)
+        {
+            totalDistance += 1;
+        }
+        else if(featureTypes->at(coordinateIndex) == 0)
+        {
+            vector<double> trainingDataPoint = vector<double>();
+            trainingDataPoint.push_back(trainingData.at(coordinateIndex));
+            vector<double> predictingDataPoint = vector<double>();
+            predictingDataPoint.push_back(predictingData.at(coordinateIndex));
+            totalDistance += euclideanDistance(trainingDataPoint, predictingDataPoint);
+        }
+        else
+        {
+            totalDistance += !(trainingData.at(coordinateIndex) == predictingData.at(coordinateIndex));
+        }
+    }
+    return totalDistance;
+}
+
 Vote KNN::determineVote(DistanceQueueEntry& queueEntry)
 {
     //Check environment variable for alterante distance measurement keyword. If none, or eucliedain use euclidean.
@@ -50,11 +79,12 @@ Vote KNN::determineVote(DistanceQueueEntry& queueEntry)
 
     if(!weightMethod || !strcmp(weightMethod, NOWEIGHTENV))
     {
-        return {*queueEntry.Data->label, 1};
+        return {queueEntry.Data->label, 1};
     }
     else if(!strcmp(weightMethod, DEFAULTWEIGHTENV))
     {
-        return {*queueEntry.Data->label , 1/queueEntry.distance};
+        double distance = queueEntry.distance ? queueEntry.distance : 1.0e-150;//numeric_limits<double>::min();
+        return {queueEntry.Data->label , 1/pow(distance,2)};
     }
     else
     {
@@ -71,67 +101,97 @@ void KNN::train(Matrix &features, Matrix& labels)
 
     //set up instance variables
     dataPoints->reserve(dataPointsCount);
-    medianValues->reserve(featuresCount);
+    featureTypes->reserve(featuresCount);
 
-    //determine medians
-    unique_ptr<vector<vector<double>>> featureValueAggregator = make_unique<vector<vector<double>>>();
-
-    featureValueAggregator->reserve(featuresCount);
-
-    for(size_t i = 0; i < featuresCount; i++)
+    //determine feature types in case they are needed for distance metrics...
+    for(size_t feature = 0; feature < features.cols(); feature++)
     {
-        featureValueAggregator->push_back(vector<double>());
-        featureValueAggregator->back().reserve(dataPointsCount);
+        featureTypes->push_back(features.valueCount(feature));
     }
 
-    for(size_t dataIndex = 0; dataIndex < dataPointsCount; dataIndex++)
-    {
-        //store median value of each point to fill in for missing values
-        vector<double>& currentFeatureRow = features.row(dataIndex);
+    char* thinData = getenv(THINDATAENVVAR);
 
-        for(size_t featureIndex = 0; featureIndex < currentFeatureRow.size(); featureIndex++)
+    if(!thinData || !strcmp(thinData, NOTHINDATA))
+    {
+        for(size_t dataIndex = 0; dataIndex < dataPointsCount; dataIndex++)
         {
-            //Check that value is not unknown
-            if(currentFeatureRow.at(featureIndex) != UNKNOWN_VALUE)
+            dataPoints->push_back({features.row(dataIndex), labels.row(dataIndex).at(0)});
+        }
+    }
+    else if(!strcmp(thinData, THINDATA))
+    {
+        /*char* minDistance = getenv(MINDISTANCEENV);
+
+        if(!minDistance)
+        {
+            cerr << "Warning: Environment variable " << MINDISTANCEENV << " is not defined. Setting to 0" << endl;
+            minDistance = "0";
+        }
+
+        stringstream convertor = stringstream(minDistance);*/
+
+        double minDistanceDouble = 0;
+
+        /*convertor >> minDistanceDouble;*/
+
+        minDistanceDouble = MINDISTANCE;//See note at const definition.
+
+        ofstream logFile("accuracyResults.csv", ios_base::app);
+
+        logFile << minDistanceDouble << ",";
+
+        logFile.close();
+
+        bool tooClose = false;
+
+        for(size_t dataIndex = 0; dataIndex < dataPointsCount; dataIndex++)
+        {
+            for(DataPoint& comparisonPoint : *dataPoints)
             {
-                featureValueAggregator->at(featureIndex).push_back(currentFeatureRow.at(featureIndex));
+                //Point is too close to be useful so no point in keeping it
+                if(measureDistance(comparisonPoint.features, features.row(dataIndex)) < minDistanceDouble)
+                {
+                    tooClose = true;
+                    break;
+                }
             }
+            
+            if(!tooClose)
+            {
+                dataPoints->push_back({features.row(dataIndex), labels.row(dataIndex).at(0)});
+            }
+            
+            tooClose = false;
         }
-
-        dataPoints->push_back({&currentFeatureRow, &labels.row(dataIndex).at(0)});
     }
-
-    for(size_t featureIndex = 0; featureIndex < featuresCount; featureIndex++)
+    else
     {
-        vector<double>& featureValues = featureValueAggregator->at(featureIndex);
-
-        sort(featureValues.begin(), featureValues.end());
-
-        double medianValue = 0;
-
-        if(!featureValues.empty())
-        {
-            medianValue = featureValues.at((featureValues.size()-1)/2);
-        }
-
-        medianValues->push_back(medianValue);
+        ThrowError("Unknown value for environment variable:", THINDATAENVVAR, "Acceptable values are:", NOTHINDATA, THINDATA);
     }
+    
+    size_t K = dataPoints->size();
+
+    char* KCount = getenv(KVALUEENVVAR);
+
+    if(KCount && strcmp(KCount, "0"))
+    {
+        stringstream convertor = stringstream(KCount);
+
+        convertor >> K;
+    }
+
+    ofstream logFile("accuracyResults.csv", ios_base::app);
+
+    logFile << dataPoints->size() << "," << K << ",";
+
+    logFile.close();
+
+    cout << "Training finished" << endl;
 }
 
 void KNN::predict(const vector<double> &features, vector<double> &labels)
 {
-    //TODO: GO through features and test for missing values. Fill in any missing values with median value
-    vector<double> featuresCopy = vector<double>(features);
-
-    for(size_t featureIndex = 0; featureIndex < featuresCopy.size(); featureIndex++)
-    {
-        if(featuresCopy.at(featureIndex) == UNKNOWN_VALUE)
-        {
-            featuresCopy.at(featureIndex) = medianValues->at(featureIndex);
-        }
-    }
-
-    //TODO: Create a vector with k spaces (0 < k <= total training points), and go over every point in the training data.
+    //Create a vector with k spaces (0 < k <= total training points), and go over every point in the training data.
     size_t K = dataPoints->size();
 
     char* KCount = getenv(KVALUEENVVAR);
@@ -196,6 +256,7 @@ void KNN::predict(const vector<double> &features, vector<double> &labels)
             }
             else
             {
+                cout << vote.weight << endl;
                 labelToVoteStrength->at(vote.label) += vote.weight;
             }
         }
@@ -219,13 +280,15 @@ void KNN::predict(const vector<double> &features, vector<double> &labels)
     {
         //find mean of K neighbors
         double totalValue = 0;
-
+        double totalWeight = 0;
         for(DistanceQueueEntry& neighbor : *nearestNeighbors)
         {
-            totalValue += *neighbor.Data->label;
+            Vote vote = determineVote(neighbor);
+            totalValue += vote.label*vote.weight;
+            totalWeight += vote.weight;
         }
 
-        labels.at(0) = totalValue/nearestNeighbors->size();
+        labels.at(0) = totalValue/totalWeight;
     }
     else
     {
