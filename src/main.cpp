@@ -327,11 +327,11 @@ void doit(ArgParser& parser)
 
 		accuracy = pow(learner->measureAccuracy(testFeatures, testLabelsContinuousCopy), 2);*/
 
-		ofstream logFile("accuracyResults.csv", ios_base::app);
+		/*ofstream logFile("accuracyResults.csv", ios_base::app);
 
     	logFile << accuracy << endl;
 
-    	logFile.close();
+    	logFile.close();*/
 
 		/*cout << ", set MSE: " << accuracy;*/
 		cout<< "\nTraining time: " << (timeAfterTraining - timeBeforeTraining) << " seconds\n";
@@ -353,11 +353,11 @@ void doit(ArgParser& parser)
 			cout << "Mean predictive accuracy: " << accuracy << "\n";
 		cout.flush();
 
-		ofstream outFile("accuracyResults.csv", ofstream::app);
+		/*ofstream outFile("accuracyResults.csv", ofstream::app);
 
 		outFile << "," << accuracy << endl;
 
-		outFile.close();
+		outFile.close();*/
 	}
 }
 
