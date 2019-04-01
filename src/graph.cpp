@@ -24,31 +24,90 @@ void Graph::KMeans(size_t k, string initialPoint)
         k = 1;
     }
 
-    vector<point*> pointForNewCluster = vector<point*>();
-
     if(initialPoint == RANDOMINITCENTROIDS)
     {
+        cout << "NOTE: Points were shuffled in order to use random points for initial centroids" << endl;
+
         shuffle(points.begin(), points.end(), default_random_engine());
     }
 
     size_t pointIndex;
 
+    //create initial clusters
     for (pointIndex = 0; pointIndex < k; pointIndex++)
     {
-        pointForNewCluster.clear();        
-        pointForNewCluster.push_back(points.at(pointIndex));
-        clusters.push_back(make_unique<Cluster>(pointForNewCluster));
+        clusters.push_back(make_unique<Cluster>(*(points.at(pointIndex).coordinates)));
     }
 
-    //TODO: Add remaining points from index into clusters by measuring against the centroid of each cluster
+    vector<vector<point>> vectorsToAddToClusters = vector<vector<point>>();
 
-    //TODO: Set a change occurred flag to false and Loop through each cluster to check if each point is closer to a newly computed centroid.
-    //If it is then remove it from the cluster and place it in the now closer centroid and set the changed flag to true.
-    //Repeat until the change occurred flag stays false. This means that no points moved and they are therefore optimally clustered.  
+    vectorsToAddToClusters.reserve(k);
+
+    for(size_t i = 0; i < clusters.size(); i++)
+    {
+        vectorsToAddToClusters.push_back(vector<point>());
+    }
+
+    size_t clusterNumber;
+
+    //place points in clusters initially
+    for(pointIndex; pointIndex < points.size(); pointIndex++)
+    {
+        clusterNumber = findClosestCentroid(points.at(pointIndex));
+        vectorsToAddToClusters.at(clusterNumber).push_back(points.at(pointIndex));
+    }
+
+    for(size_t clusterIndex = 0; clusterIndex < clusters.size(); clusterIndex++)
+    {
+        clusters.at(clusterIndex)->addPoints(vectorsToAddToClusters.at(clusterIndex), true);
+    }
+
+    //Move points around and recalculate centroids until no more points move around.
+    bool pointsChanged;
+    vector<point> pointsToConsider = vector<point>();
+
+    do
+    {
+        pointsChanged = false;
+
+        //Clean record of what points go where
+        for(vector<point>& clusterVector : vectorsToAddToClusters)
+        {
+            clusterVector.clear();
+        }
+
+        //for each centroid
+        for(size_t clusterIndex = 0; clusterIndex < clusters.size(); clusterIndex++)
+        {
+            pointsToConsider = clusters.at(clusterIndex)->getPoints();
+
+            //for each point in each centroid
+            for(point& currentPoint : pointsToConsider)
+            {
+                size_t closestCentroidIndex = findClosestCentroid(currentPoint);
+
+                //track points which are closer to new centroids
+                if(closestCentroidIndex != clusterIndex)
+                {
+                    vectorsToAddToClusters.at(closestCentroidIndex).push_back(currentPoint);
+                    clusters.at(clusterIndex)->removePoint(currentPoint.id, false);
+                    pointsChanged = true;
+                }
+            }
+        }
+
+        // actually move points into new clusters and recalculate centroids
+        for(size_t clusterIndex = 0; clusterIndex < vectorsToAddToClusters.size(); clusterIndex++)
+        {
+            clusters.at(clusterIndex)->addPoints(vectorsToAddToClusters.at(clusterIndex), true);
+        }
+
+    } while(pointsChanged);
 }
 
 void Graph::HAC(string linkType, size_t lowerK, size_t upperK)
 {
+    ThrowError("Sorry, HAC is not yet implemented");
 }
 
 void Graph::createClusters()
@@ -131,6 +190,26 @@ double Graph::calculateTotalSSE()
     return totalSSE;
 }
 
+size_t Graph::findClosestCentroid(point pointToEvaluate)
+{
+    double currentDistance;
+    double closestDistance = numeric_limits<double>::max();
+    size_t clusterNumber = numeric_limits<size_t>::max();
+
+        for(size_t clusterIndex = 0; clusterIndex < clusters.size(); clusterIndex++)
+        {
+            currentDistance = clusters.at(clusterIndex)->measurePointDistance(pointToEvaluate.coordinates);
+
+            if(currentDistance < closestDistance)
+            {
+                closestDistance = currentDistance;
+                clusterNumber = clusterIndex;
+            }
+        }
+
+    return clusterNumber;
+}
+
 void Graph::train(Matrix &features, Matrix &labels)
 {
     char *useLabel = getenv(INCLUDELABELENV);
@@ -139,8 +218,7 @@ void Graph::train(Matrix &features, Matrix &labels)
     {
         for (size_t dataPointIndex = 0; dataPointIndex < features.rows(); dataPointIndex++)
         {
-            point &dataPoint = features.row(dataPointIndex);
-            dataPoint.push_back(labels.row(dataPointIndex).at(0));
+            features.row(dataPointIndex).push_back(labels.row(dataPointIndex).at(0));
         }
     }
 
@@ -148,7 +226,7 @@ void Graph::train(Matrix &features, Matrix &labels)
 
     for (size_t row = 0; row < features.rows(); row++)
     {
-        points.push_back(&features.row(row));
+        points.push_back(point(row, &features.row(row)));
     }
 
     createClusters();
@@ -157,7 +235,7 @@ void Graph::train(Matrix &features, Matrix &labels)
 
     outFile << getenv(CLUSTERALGOENV) << ":" << clusters.size() << endl;
 
-    point centroid;
+    vector<double> centroid;
 
     for (unique_ptr<Cluster> &cluster : clusters)
     {
@@ -168,11 +246,10 @@ void Graph::train(Matrix &features, Matrix &labels)
             outFile << coordinate << ",";
         }
 
-        outFile << ";" << cluster->getPoints().size() << cluster->calculateSSE() << endl;
+        outFile << ";" << cluster->getPointCount() << cluster->calculateSSE() << endl;
     }
 
-    outFile << calculateTotalSSE() << endl
-            << endl;
+    outFile << calculateTotalSSE() << endl << endl;
 
     outFile.close();
 }

@@ -14,7 +14,7 @@
 class Graph: SupervisedLearner {
     private:
     vector<unique_ptr<Cluster>> clusters;
-    vector<point*> points;
+    vector<point> points;
     Rand m_rand;
     const char* CLUSTERALGOENV = "algorithm";
     const char* HACSTR = "HAC";
@@ -37,6 +37,7 @@ class Graph: SupervisedLearner {
     void HAC(string linkType, size_t lowerK, size_t upperK);
 
     double calculateTotalSSE();
+    size_t findClosestCentroid(point pointToEvaluate);
 
     // Train the model to predict the labels
     void train(Matrix &features, Matrix &labels);

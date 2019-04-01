@@ -3,29 +3,43 @@
 
 #include <vector>
 #include <math.h>
+#include <map>
 #include "error.h"
 
 using namespace std;
 
-typedef vector<double> point;
+//This struct is used primarily to represent point data outside of clusters
+typedef struct point
+{
+    vector<double>* coordinates;
+    size_t id;
 
-class Cluster {
+    point(size_t id, vector<double>* coordinates): id(id), coordinates(coordinates)
+    {}
+};
+
+class Cluster
+{
     private:
-    vector<point*> points;
-    point centroid;
-    void recomputeCentroid();
+    map<size_t, vector<double>*> mappedPoints;
+    vector<double> centroid;
+    void reComputeCentroid();
     const string SINGLELINK = "single";
     const string COMPLETELINK = "complete";
 
     public:
     Cluster();
-    Cluster(vector<point*> points);
+    Cluster(vector<point> points, bool recomputeCentroid);
+    Cluster(vector<double> centroid);
     double calculateSSE();
-    void addPoints(vector<point*> pointsToAdd);
-    double measurePointDistance(point* otherPoint);
+    void addPoints(vector<point>& pointsToAdd, bool recomputeCentroid);
+    double measurePointDistance(vector<double>* otherPoint);
     double measureClusterDistance(Cluster& otherCluster, string measureType);
-    point getCentroid();
-    vector<point*> getPoints();
+    vector<double> getCentroid();
+    vector<point> getPoints();
+    point getPoint(size_t id);
+    void removePoint(size_t id, bool recomputeCentroid);
+    size_t getPointCount();
 };
 
 #endif

@@ -2,42 +2,67 @@
 
 Cluster::Cluster()
 {
-    points = vector<point*>();
-    centroid = point();
+    mappedPoints = map<size_t, vector<double>*>();
+    centroid = vector<double>();
 }
 
-Cluster::Cluster(vector<point*> points): points(points)
+Cluster::Cluster(vector<point> points, bool recomputeCentroid)
 {
-    centroid = point();
+    mappedPoints = map<size_t, vector<double>*>();
+
+    for (point currentPoint : points)
+    {
+        mappedPoints.emplace(currentPoint.id, currentPoint.coordinates);
+    }
+
+    centroid = vector<double>();
+    
+    if(recomputeCentroid)
+    {
+        reComputeCentroid();
+    }
+}
+
+Cluster::Cluster(vector<double> centroid): centroid(centroid)
+{
+    mappedPoints = map<size_t, vector<double>*>();
 }
 
 double Cluster::calculateSSE()
 {
     double SSE = 0;
 
-    for(point* point : points)
+    for(map<size_t, vector<double>*>::iterator mapIter = mappedPoints.begin(); mapIter != mappedPoints.end(); mapIter++)
     {
-        SSE += pow(measurePointDistance(point), 2);
+        SSE += pow(measurePointDistance(mapIter->second), 2);
     }
 
     return SSE;
 }
 
-void Cluster::addPoints(vector<point*> pointsToAdd)
+void Cluster::addPoints(vector<point>& pointsToAdd, bool recomputeCentroid)
 {
-    points.reserve(points.size() + pointsToAdd.size());
+    if(!pointsToAdd.empty())
+    {
+        for(point& pointToAdd : pointsToAdd)
+        {
+            mappedPoints.emplace(pointToAdd.id, pointToAdd.coordinates);
+        }
+    }
 
-    points.insert(points.end(), pointsToAdd.begin(), pointsToAdd.end());
+    if(recomputeCentroid)
+    {
+        reComputeCentroid();
+    }
+    
 }
 
-double Cluster::measurePointDistance(point* otherPoint)
+double Cluster::measurePointDistance(vector<double>* otherPoint)
 {
     if(centroid.size() != otherPoint->size())
     {
         ThrowError("Points to compare do not have the same dimensionality:", to_string(centroid.size()), to_string(otherPoint->size()));
     }
-
-    recomputeCentroid();
 
     double totalDistance = 0;
 
@@ -49,32 +74,60 @@ double Cluster::measurePointDistance(point* otherPoint)
     return sqrt(totalDistance);
 }
 
-void Cluster::recomputeCentroid()
+void Cluster::reComputeCentroid()
 {
     centroid.clear();
-    centroid.reserve(points.at(0)->size());
+    centroid.reserve(mappedPoints.begin()->second->size());
     double currentDimensionLength;
 
-    for(size_t dimension = 0; dimension < centroid.size(); dimension++)
+    for(size_t dimension = 0; dimension < mappedPoints.begin()->second->size(); dimension++)
     {
         currentDimensionLength = 0;
 
-        for(size_t pointIndex = 0; pointIndex < points.size(); pointIndex++)
+        for(map<size_t, vector<double>*>::iterator mapIter = mappedPoints.begin(); mapIter != mappedPoints.end(); mapIter++)
         {
-            currentDimensionLength += points.at(pointIndex)->at(dimension);
+            currentDimensionLength += mapIter->second->at(dimension);
         }
 
-        centroid.push_back(currentDimensionLength/points.size());
+        centroid.push_back(currentDimensionLength/mappedPoints.size());
     }
 }
 
-point Cluster::getCentroid()
+vector<double> Cluster::getCentroid()
 {
-    recomputeCentroid();
     return centroid;
 }
 
-vector<point*> Cluster::getPoints()
+vector<point> Cluster::getPoints()
 {
+    vector<point> points = vector<point>();
+
+    points.reserve(mappedPoints.size());
+
+    for(map<size_t, vector<double>*>::iterator mapIter = mappedPoints.begin(); mapIter != mappedPoints.end(); mapIter++)
+    {
+        points.push_back(point(mapIter->first, mapIter->second));
+    }
+
     return points;
+}
+
+point Cluster::getPoint(size_t id)
+{
+    return point(id, mappedPoints.at(id));
+}
+
+void Cluster::removePoint(size_t id, bool recomputeCentroid)
+{
+    mappedPoints.erase(id);
+
+    if(recomputeCentroid)
+    {
+        reComputeCentroid();
+    }
+}
+
+size_t Cluster::getPointCount()
+{
+    return mappedPoints.size();
 }
